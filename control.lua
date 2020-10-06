@@ -1,13 +1,10 @@
-
--- require('__debugadapter__/debugadapter.lua')
-
 -- Helper function
-local function debug_print(str)
-	if global.poflo_debug
-	then
-		game.print(str)
-	end
-end
+-- local function debug_print(str)
+-- 	if global.poflo_debug
+-- 	then
+-- 		game.print(str)
+-- 	end
+-- end
 
 
 -- Produces a selection tool and takes it away again.
@@ -45,13 +42,14 @@ end
 
 -- Start it from shortcut instead of hotkey
 local function bot_prio_shortcut(event)
-	debug_print("Bot Prio Shortcut")
+	-- debug_print("Bot Prio Shortcut")
 	if event.prototype_name == "bot-prio-shortcut"
   then
 		on_hotkey_main(event)
 	end
 end
 
+-- Runs after player selected stuff
 local function handle_selection(event)
   local function_name = "botprio event"
 
@@ -71,8 +69,23 @@ local function handle_selection(event)
   -- force.chart(surface, area)
 
   for _, entity in ipairs(entities) do
+    -- Handle ghosts
     if entity.type == "entity-ghost" or entity.type == "tile-ghost" then
-      game.print(entity.name)
+      local new = surface.create_entity({
+        name = entity.name,
+        position = entity.position,
+        direction = entity.direction,
+        force = entity.force,
+        player = player,
+        inner_name = entity.ghost_name
+      })
+      new.copy_settings(entity)
+      entity.order_deconstruction(force)
+    else -- handle all other entities
+      if entity ~= nil and entity.to_be_deconstructed() then
+        entity.cancel_deconstruction(force)
+        entity.order_deconstruction(force)
+      end
     end
   end
 
