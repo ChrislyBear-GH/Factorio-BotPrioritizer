@@ -5,5 +5,5 @@
     "author": "ChrislyBear",
     "factorio_version": "1.0",
     "dependencies": ["base >= 1.0"],
-    "description": "A simple tool, that lets you select placed ghosts and give your personal robots priority. Because who likes to wait until the base robots finaly arrive?!"
+    "description": "A simple tool, that lets you select placed ghosts and tries to give your personal robots priority by re-issuing the order. Because who likes to wait until the base robots finaly arrive?!"
   }
