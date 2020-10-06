@@ -1,0 +1,9 @@
+{
+    "name": "BotPrioritizer",
+    "version": "0.1.0",
+    "title": "Bot Prioritzer",
+    "author": "ChrislyBear",
+    "factorio_version": "1.0",
+    "dependencies": ["base >= 1.0"],
+    "description": "A simple tool, that lets you select placed ghosts and give your personal robots priority. Because who likes to wait until the base robots finaly arrive?!"
+  }
