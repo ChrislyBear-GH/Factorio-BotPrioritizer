@@ -17,7 +17,7 @@ local function on_hotkey_main(event)
 	if global.bprio_hint == 0
 	then
 		player.print({"bot-prio.hint"})
-		global.bprio_hint = 0
+		global.bprio_hint = 1
 	end
 
 	-- put whatever is in the player's hand back in their inventory
