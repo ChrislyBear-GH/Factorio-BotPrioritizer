@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.3
+Date: 2020-10-08
+  Changes:
+    - The built-in function "get_upgrade_target()" is unreliable. Implemented a system to keep
+      track of upgrades and upgrade targets based on events.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.2
 Date: 2020-10-07
   Changes:
