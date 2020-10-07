@@ -71,16 +71,8 @@ local function handle_selection(event)
   for _, entity in ipairs(entities) do
     -- Handle ghosts
     if entity.type == "entity-ghost" or entity.type == "tile-ghost" then
-      local new = surface.create_entity({
-        name = entity.name,
-        position = entity.position,
-        direction = entity.direction,
-        force = entity.force,
-        player = player,
-        inner_name = entity.ghost_name
-      })
-      new.copy_settings(entity)
-      entity.order_deconstruction(force)
+      local new = entity.clone({position = entity.position, force = entity.force})
+      entity.die(entity.force)
     else -- handle all other entities
       if entity ~= nil and entity.to_be_deconstructed() then
         entity.cancel_deconstruction(force)
