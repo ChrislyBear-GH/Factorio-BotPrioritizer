@@ -69,15 +69,17 @@ local function handle_selection(event)
   -- force.chart(surface, area)
 
   for _, entity in ipairs(entities) do
-    -- Handle ghosts
-    if entity.type == "entity-ghost" or entity.type == "tile-ghost" then
+    if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
       local new = entity.clone({position = entity.position, force = entity.force})
-      entity.die(entity.force)
-    else -- handle all other entities
-      if entity ~= nil and entity.to_be_deconstructed() then
-        entity.cancel_deconstruction(force)
-        entity.order_deconstruction(force)
-      end
+      -- entity.die(entity.force)
+      entity.order_deconstruction(force)
+    elseif entity ~= nil and entity.to_be_deconstructed() then -- handle entities to be deconstructed
+      entity.cancel_deconstruction(force)
+      entity.order_deconstruction(force)
+    elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
+      local upg_target = entity.get_upgrade_target()
+      entity.cancel_upgrade(force)
+      entity.order_upgrade({force = entity.force, target = upg_target, player = player})
     end
   end
 
