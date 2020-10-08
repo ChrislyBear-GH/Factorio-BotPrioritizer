@@ -6,10 +6,10 @@
 
 ## A selection tool to help with building things quicker
 
-Have you ever stood in front of a large blueprint that is going to be built or things to be upgraded with all the neccessary things in your pocket and your personal robots ready to go, but nothing happens because the base robots took the job and are on their long, long way?  
-Or have you ever deconstructed a few things to quickly place them somewhere else but the base robots took everything far away into the central logistics storage?
+Have you ever stood in front of a large blueprint that is going **to be built** or things **to be upgraded** with all the neccessary things **in your pocket** and your **personal robots ready to go**, but **nothing happens** because the **base robots** took the job and are on their long, long way?  
+Or have you ever **deconstructed** a few things to quickly **place them somewhere else** but the base robots **took everything far away** into the central logistics storage?
 
-Then this mod is for you! With this tool you can select entities and try to re-issue the work orders, so that your personal construction bots can take over!
+**Then this mod is for you!** With this tool you can select entities and try to **re-issue the work orders**, so that your **personal construction bots can take over!**
 
 -------------------------------------
 
@@ -31,7 +31,7 @@ After installing the mod, there are two ways to use it:
 
 Each of the two previsouly shown options will activate the selection tool. It will put whatevery you had in your hand back into the inventory and give you the selection tool in your hand. The cursor will show the mod icon and if you click-and-drag to select an area there will be a purple border.
 
-![Screenshot of the selection tool][selection]
+After making a selection, the mod will re-issue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job. Those poor base robots will turn around and go back and put their things back into storage.
 
 It will work on:
 
@@ -39,7 +39,9 @@ It will work on:
 2. Deconstruction Orders
 3. Upgrade Orders
 
-Currently I'm still working on Item Request Orders, i.e. module requests for assemblers, fuel requests for trains. I'm not sure if this is covered by Upgrade Orders.
+![Screenshot of the selection tool][selection]
+
+Currently I'm still working on Item Request Orders, i.e. module requests for assemblers, fuel requests for trains. I'm not sure if this is already covered by Upgrade Orders.
 
 ------------------------
 
