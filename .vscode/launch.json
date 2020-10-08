@@ -1,0 +1,23 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "factoriomod",
+            "request": "launch",
+            "name": "Factorio Mod Debug",
+            "factorioPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Factorio\\bin\\x64\\factorio.exe",
+            "useInstrumentMode": true
+        },
+        {
+            "type": "factoriomod",
+            "request": "launch",
+            "name": "Factorio Mod Debug (Profile)",
+            "factorioPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Factorio\\bin\\x64\\factorio.exe",
+            "hookMode": "profile",
+            "useInstrumentMode": true
+        }
+    ]
+}
