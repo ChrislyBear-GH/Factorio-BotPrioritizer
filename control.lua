@@ -102,9 +102,10 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
         end
     end
 
+    -- Report outcome.
+    -- feedback for the player.
     if not disable_msg then 
-        -- Report outcome.
-        -- feedback for the player.
+
         local msg = "" 
         if cnt > 0 then
             msg = msg .. "Re-Assigned " .. cnt .. " work orders"
@@ -146,12 +147,12 @@ local function on_hotkey_main(event)
         end
 
     else
-
+        -- Make sure god mode isn't used and there's an actual character on the ground
         if player.character and player.character.valid then
             local char = player.character
     
             if not char.logistic_cell then 
-                player.print("Personal Roboport not equipped.")
+                player.print("Personal roboport not equipped.")
                 return
             end
             local c_rad = char.logistic_cell.construction_radius or 0
@@ -171,11 +172,6 @@ local function on_hotkey_main(event)
             reprioritize(entities, tiles, player.surface, event.player_index, use_tool, disable_msg)    
         end
     end
-
-
-
-
-
 
 end
 
