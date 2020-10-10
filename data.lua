@@ -18,7 +18,7 @@ data:extend(
 		show_in_library = false,
 		icon = "__BotPrioritizer__/graphics/bot-prioritizer.png",
 		flags = {"hidden", "only-in-cursor"},
-		always_include_tiles = false,
+		always_include_tiles = true,
 		subgroup = "tool",
 		order = "c[automated-construction]-b[tree-deconstructor]",
 		stack_size = 1,
