@@ -17,9 +17,11 @@ Or have you ever **deconstructed** a few things to quickly **place them somewher
 ## What's being provided by this mod?
 
 This mod provides the ability to reassign jobs to your personal robots.  
-You have the option to
+You have the option to  
+
 - use a selection-tool that doesn't have to be researched or crafted, or to
-- just reassign jobs in your personal roboport construction area.
+- just reassign jobs in your personal roboport construction area directly.  
+&nbsp;
 
 You can choose between these two options in the mod settings:
 ![Mod settings][settings]
