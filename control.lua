@@ -1,38 +1,22 @@
 -- Table to keep track of upgrades. The built-in function is unreliable.
-global.upgrades = global.upgrades or {}
-
-
+if global.upgrades then global.upgrades = global.upgrades
+else global.upgrades = {} end
 
 -- Produces a selection tool and takes it away again.
 local function on_hotkey_main(event)
     local player = game.players[event.player_index]
     
-    -- once in a save game, a message is displayed giving a hint	
-    global.bprio_hint = global.bprio_hint or 0	
+    -- once in a save game, a message is displayed giving a hint
+    global.bprio_hint = global.bprio_hint or 0
     if global.bprio_hint == 0 then
         player.print({"bot-prio.hint"})
         global.bprio_hint = 1
     end
 
-    -- put whatever is in the player's hand back in their inventory
-    -- and put our selection tool in their hand
+    -- Put a selection tool in the player's hand
     if player.clean_cursor() then
         player.cursor_stack.set_stack({name = 'bot-prioritizer', type = 'selection-tool', count = 1})
     end
-    -- local old_cursor_item = ""
-    -- if player.cursor_stack.valid_for_read
-    -- then
-    -- 	old_cursor_item	= player.cursor_stack.name
-    -- end
-    
-    -- player.clean_cursor()
-    -- if player.cursor_stack ~= nil	then
-    -- 	if old_cursor_item ~= "bot-prioritizer"	then
-    -- 		local cursor_stack = player.cursor_stack
-    --     cursor_stack.clear()
-    --     cursor_stack.set_stack({name="bot-prioritizer", type="selection-tool", count = 1})
-    -- 	end
-    -- end
 end
 
 -- Start it from shortcut instead of hotkey
@@ -44,17 +28,13 @@ end
 
 -- Add information about upgrades to our table
 local function handle_ordered_upgrades(event)
-    local ent = event.entity
     local nr = event.entity.unit_number
-    local trg = event.target.name
 
-    if global.upgrades then
-        global.upgrades = global.upgrades
-    else
-        global.upgrades = {}
-    end
+    if global.upgrades then global.upgrades = global.upgrades
+    else global.upgrades = {} end
+
     if not global.upgrades[nr] then
-        global.upgrades[nr] = { e = ent, t = trg }
+        global.upgrades[nr] = { e = event.entity, t = event.target.name }
     end
 
 end
@@ -70,11 +50,8 @@ end
 
 -- Clear stale entites from upgrade table
 local function remove_stale_upgrades()
-    if global.upgrades then
-        global.upgrades = global.upgrades
-    else
-        global.upgrades = {}
-    end
+    if global.upgrades then global.upgrades = global.upgrades
+    else global.upgrades = {} end
 
     for unit_nr, data in pairs(global.upgrades) do
         if not data.e.valid or not data.e or not data.e.to_be_upgraded then
@@ -89,42 +66,30 @@ local function handle_selection(event)
     if not event.item == 'bot-prioritizer' then return end
 
     -- Main logic
-    -- local area = event.area
     local player = game.get_player(event.player_index)
     local force = player.force
-    -- local surface = player.surface
-
-    -- local entities = event.entities
-    -- local tiles = event.tiles
 
     -- Remove tool from hand
     -- player.remove_item({name = 'bot-prioritizer'})
-    -- force.chart(surface, area)
 
     -- Keep updgrade table clean
-    -- remove_stale_upgrades()
+    remove_stale_upgrades()
 
-    for _, entity in ipairs(event.entities) do
+    for _, entity in pairs(event.entities) do
         if entity.valid then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
                 if entity.clone({position = entity.position, force = entity.force}) then
-                    -- entity.die(entity.force)
-                    -- entity.order_deconstruction(force)
                     entity.destroy()
                 end
             elseif entity ~= nil and entity.to_be_deconstructed() then -- handle entities to be deconstructed
                 entity.cancel_deconstruction(force)
                 entity.order_deconstruction(force)
             elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
-                local upgrade_proto = entity.get_upgrade_target()
+                -- local upgrade_proto = entity.get_upgrade_target() -- This doesn't work for some reason!
+                local upgrade_proto = global.upgrades[entity.unit_number].t
                 if upgrade_proto then
-                    entity.cancel_upgrade(force, player)
+                    entity.cancel_upgrade(force)
                     entity.order_upgrade({force = entity.force, target = upgrade_proto, player = player})
-                -- end
-                -- local up_trg = global.upgrades[entity.unit_number].t
-                -- if up_trg ~= nil then
-                --     entity.cancel_upgrade(force)
-                --     entity.order_upgrade({force = entity.force, target = up_trg, player = player})
                 else
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
@@ -157,5 +122,5 @@ script.on_event(defines.events.on_player_selected_area, handle_selection)
 script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
 
 -- Handle upgrade orders because get_upgrade_target() is unreliable
--- script.on_event(defines.events.on_marked_for_upgrade, handle_ordered_upgrades)
--- script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
+script.on_event(defines.events.on_marked_for_upgrade, handle_ordered_upgrades)
+script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
