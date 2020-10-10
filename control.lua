@@ -2,27 +2,11 @@
 if global.upgrades then global.upgrades = global.upgrades
 else global.upgrades = {} end
 
--- Produces a selection tool and takes it away again.
-local function on_hotkey_main(event)
-    local player = game.players[event.player_index]
-    
-    -- once in a save game, a message is displayed giving a hint
-    global.bprio_hint = global.bprio_hint or 0
-    if global.bprio_hint == 0 then
-        player.print({"bot-prio.hint"})
-        global.bprio_hint = 1
-    end
-
-    -- Put a selection tool in the player's hand
-    if player.clean_cursor() then
-        player.cursor_stack.set_stack({name = 'bot-prioritizer', type = 'selection-tool', count = 1})
-    end
-end
-
--- Start it from shortcut instead of hotkey
-local function bot_prio_shortcut(event)
-    if event.prototype_name == "bot-prio-shortcut" then
-        on_hotkey_main(event)
+function personal_setting_value(player, name)
+    if player and player.mod_settings and player.mod_settings[name] then
+      return player.mod_settings[name].value
+    else
+      return nil
     end
 end
 
@@ -60,22 +44,15 @@ local function remove_stale_upgrades()
     end
 end
 
-
--- Runs after player selected stuff
-local function handle_selection(event)
-    if not event.item == 'bot-prioritizer' then return end
-
-    -- Main logic
-    local player = game.get_player(event.player_index)
-    local force = player.force
-
-    -- Remove tool from hand
-    -- player.remove_item({name = 'bot-prioritizer'})
+local function reprioritize(entities, tiles, surface, player_index)
 
     -- Keep updgrade table clean
     remove_stale_upgrades()
 
-    for _, entity in pairs(event.entities) do
+    local player = game.get_player(player_index)
+    local force = player.force
+
+    for _, entity in pairs(entities) do
         if entity.valid then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
                 if entity.clone({position = entity.position, force = entity.force}) then
@@ -97,12 +74,12 @@ local function handle_selection(event)
         end
     end
 
-    for _, tile in pairs(event.tiles) do
+    for _, tile in pairs(tiles) do
         if tile.valid then
             --! API request tile.to_be_deconstructed()
             local pos = tile.position
             pos.x, pos.y = pos.x + .5, pos.y + .5
-            if event.surface.find_entity('deconstructible-tile-proxy', pos) then
+            if surface.find_entity('deconstructible-tile-proxy', pos) then
                 tile.cancel_deconstruction(force, player)
                 tile.order_deconstruction(force, player)
             end
@@ -112,15 +89,70 @@ local function handle_selection(event)
 end
 
 
+-- Produces a selection tool and takes it away again or reprioritzes right away.
+local function on_hotkey_main(event)
+    if not event.item == 'bot-prioritizer' then return end
+
+    local player = game.get_player(event.player_index)
+    local use_tool = personal_setting_value(player, "botprio-use-selection")
+
+    if use_tool then
+        -- once in a save game, a message is displayed giving a hint for the tool use
+        global.bprio_hint_tool = global.bprio_hint_tool or 0
+        if global.bprio_hint_tool == 0 then
+            player.print({"bot-prio.hint-tool"})
+            global.bprio_hint_tool = 1
+        end
+
+    else
+
+        if player.character and player.character.valid then
+            local char = player.character
+    
+            if not char.logistic_cell then 
+                player.print("Personal Roboport not equipped.")
+                return
+            end
+            local radius = char.logistic_cell.construction_radius or 0
+    
+            do return end
+    
+          reprioritize(event.entities, event.tiles, event.surface, event.player_index)
+    
+        end
+
+    end
+
+
+
+
+
+
+end
+
+-- Runs after player selected stuff
+local function handle_selection(event)
+    if not event.item == 'bot-prioritizer' then return end
+    reprioritize(event.entities, event.tiles, event.surface, event.player_index)
+end
+
+-- Start it from shortcut instead of hotkey
+local function bot_prio_shortcut(event)
+    if event.prototype_name == "bot-prio-shortcut" then
+        on_hotkey_main(event)
+    end
+end
+
+
 -- Hotkey
 script.on_event( "botprio-hotkey", on_hotkey_main)
 -- Shortcut button
 script.on_event( defines.events.on_lua_shortcut, bot_prio_shortcut)
 
--- Gather entity ghosts and give bots priority after selction is made
-script.on_event(defines.events.on_player_selected_area, handle_selection)
-script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
-
 -- Handle upgrade orders because get_upgrade_target() is unreliable
 script.on_event(defines.events.on_marked_for_upgrade, handle_ordered_upgrades)
 script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
+
+-- Gather entity ghosts and give bots priority after selction is made
+script.on_event(defines.events.on_player_selected_area, handle_selection)
+script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
