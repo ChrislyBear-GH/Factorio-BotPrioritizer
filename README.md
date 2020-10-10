@@ -1,6 +1,7 @@
 [quickbar]: https://i.ibb.co/pXVrSgL/quickbar-highlighted.png "Button location in the quickbar"
 [controls]: https://i.ibb.co/6Jm8Wr2/hotkey.png "Keyboard configuration"
 [selection]: https://i.ibb.co/DQz1vw0/selection.png "Screenshot of the selection tool"
+[settings]: https://i.ibb.co/Czh9QdG/settings.png "Mod settings"
 
 # Bot Prioritizer 0.1.4
 
@@ -15,7 +16,19 @@ Or have you ever **deconstructed** a few things to quickly **place them somewher
 
 ## What's being provided by this mod?
 
-This mod provides a selection-tool that doesn't have to be researched or crafted. Since it doesn't change a thing in your game and only gives your personal robots priority I don't find it neccessary to set any hurdles to use the tool.  
+This mod provides the ability to reassign jobs to your personal robots.  
+You have the option to
+- use a selection-tool that doesn't have to be researched or crafted, or to
+- just reassign jobs in your personal roboport construction area.
+
+You can choose between these two options in the mod settings:
+![Mod settings][settings]
+
+(Since it doesn't change a thing in your game and only gives your personal robots priority I don't find it neccessary to set any hurdles to use the selection tool/ability)
+
+------------------------
+
+## How to use the mod?
 
 After installing the mod, there are two ways to use it:
 
@@ -25,19 +38,12 @@ After installing the mod, there are two ways to use it:
 - Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:
 ![Keyboard configuration page][controls]
 
-## New in 0.1.4
-
-There's also an option to just use the current personal roboport area as selection area! This way is much quicker to take over robot jobs!
-
-------------------------
-
-## How to use the mod?
-
-Each of the two previsouly shown options will either **activate the selection tool** or **do the re-prioritization right away**, depending on the **mod settings**. 
+Each of the two options will either **activate the selection tool** or **do the re-prioritization right away**, depending on the **mod settings**. 
 
 If you have set the mod to **use the selection tool**, the cursor will show the mod icon and if you click-and-drag to select an area there will be a purple border.
 
-After making a selection, the mod will re-issue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job. Those poor base robots will turn around and go back and put their things back into storage.
+After making a selection, the mod will re-issue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job.  
+Those poor base robots will turn around and go back and put their things back into storage.
 
 It will work on:
 
