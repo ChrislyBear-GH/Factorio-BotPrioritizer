@@ -1,9 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.4
-Date: ????
+Date: 2020-10-10
+  Features:
+    - Use personal roboport area directly instead of making a selection!
+    - Option to use the personal roboport area as selection area; Selection tool is still the default
   Changes:
-    - Reassigning deconstruction of tiles added
-    - Change in upgrade handling
+    - Reassigning deconstruction of tiles added (thanks to Nexela!)
+    - Verbosely print results of the reassignment to the player
+    - Option to disable these aforementioned messages 
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.3
 Date: 2020-10-08

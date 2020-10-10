@@ -2,9 +2,9 @@
 [controls]: https://i.ibb.co/6Jm8Wr2/hotkey.png "Keyboard configuration"
 [selection]: https://i.ibb.co/DQz1vw0/selection.png "Screenshot of the selection tool"
 
-# Bot Prioritizer 0.1.3
+# Bot Prioritizer 0.1.4
 
-## A selection tool to help with building things quicker
+## A mod to help with building things quicker
 
 Have you ever stood in front of a large blueprint that is going **to be built** or things **to be upgraded** with all the neccessary things **in your pocket** and your **personal robots ready to go**, but **nothing happens** because the **base robots** took the job and are on their long, long way?  
 Or have you ever **deconstructed** a few things to quickly **place them somewhere else** but the base robots **took everything far away** into the central logistics storage?
@@ -25,11 +25,17 @@ After installing the mod, there are two ways to use it:
 - Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:
 ![Keyboard configuration page][controls]
 
+## New in 0.1.4
+
+There's also an option to just use the current personal roboport area as selection area! This way is much quicker to take over robot jobs!
+
 ------------------------
 
 ## How to use the mod?
 
-Each of the two previsouly shown options will activate the selection tool. It will put whatevery you had in your hand back into the inventory and give you the selection tool in your hand. The cursor will show the mod icon and if you click-and-drag to select an area there will be a purple border.
+Each of the two previsouly shown options will either **activate the selection tool** or **do the re-prioritization right away**, depending on the **mod settings**. 
+
+If you have set the mod to **use the selection tool**, the cursor will show the mod icon and if you click-and-drag to select an area there will be a purple border.
 
 After making a selection, the mod will re-issue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job. Those poor base robots will turn around and go back and put their things back into storage.
 
@@ -65,4 +71,5 @@ Credit where credit is due:
 
 - [Nilaus](https://www.twitch.tv/nilaus), who streams over at Twitch.tv and makes excellent YouTube videos, for the original method that inspired this mod!
 - [Optera](https://mods.factorio.com/user/Optera) for the [idea](https://mods.factorio.com/mod/GhostScanner/discussion/5d4e4346bf0746000dcd3c55) that made handling upgrades possible.
+- Thanks to [Nexela](https://mods.factorio.com/user/Nexela) for taking the time to refactor and improve my code when I asked for advice! 
 - Thanks to [Theanderblast](https://mods.factorio.com/user/Theanderblast). I shamelessly copied a few things from his [Max Rate Calculator](https://mods.factorio.com/mod/MaxRateCalculator) mod because I had no idea how to add such a tool into the game.
