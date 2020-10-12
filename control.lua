@@ -1,6 +1,6 @@
 
 -- Grab settings value
-function personal_setting_value(player, name)
+local function personal_setting_value(player, name)
     if player and player.mod_settings and player.mod_settings[name] then
       return player.mod_settings[name].value
     else
@@ -175,6 +175,7 @@ local function on_hotkey_main(event)
     local player = game.get_player(event.player_index)
     local use_tool = personal_setting_value(player, "botprio-use-selection")
     local disable_msg = personal_setting_value(player, "botprio-disable-msg")
+    local toggle = personal_setting_value(player, "botprio-toggling")
 
     if use_tool then
         produce_tool(player)
