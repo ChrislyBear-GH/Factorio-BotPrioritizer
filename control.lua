@@ -8,6 +8,44 @@ local function personal_setting_value(player, name)
     end
 end
 
+-- Debug rendering
+local function debug_draw_bot_area(player, bounding_box)
+    local render_id = rendering.draw_rectangle({
+        color={1,0,0},
+        width=2,
+        filled=false,
+        left_top=bounding_box[1],
+        right_bottom=bounding_box[2],
+        surface=player.surface,
+        time_to_live=120,
+    })
+end
+
+-- flib function for deep copying.
+-- One function isn't worth a dependency
+local function tbl_deep_copy(tbl)
+    local lookup_table = {}
+    local function _copy(object)
+        if type(object) ~= "table" then
+            return object
+            -- don't copy factorio rich objects
+        elseif object.__self then
+            return object
+        elseif lookup_table[object] then
+            return lookup_table[object]
+        end
+
+        local new_table = {}
+        lookup_table[object] = new_table
+        for index, value in pairs(object) do
+            new_table[_copy(index)] = _copy(value)
+        end
+
+        return setmetatable(new_table, getmetatable(object))
+    end
+    return _copy(tbl)
+end
+
 -- Add information about upgrades to our table
 local function handle_ordered_upgrades(event)
     local nr = event.entity.unit_number
@@ -135,7 +173,8 @@ local function produce_tool(player)
         end
 end
 
-local function no_tool(player)
+local function no_tool(player, disable_msg, plr_moving)
+    local use_tool = false -- kind of obvious, here
     -- Make sure god mode isn't used and there's an actual character on the ground
     if player.character and player.character.valid then
         local char = player.character
@@ -146,11 +185,19 @@ local function no_tool(player)
         end
         local c_rad = char.logistic_cell.construction_radius or 0
         local pos = player.position
+        local bbox = {{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}}
 
-        local entities = player.surface.find_entities_filtered({
-                area={{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}},
+        if global.debug then debug_draw_bot_area(player, bbox) end
+
+            local entities = player.surface.find_entities_filtered({
+                area=bbox,
                 force = player.force
             })
+        
+
+            -- TODO: Implement logic to stop reassigning already reassigned entities!
+
+        --global.player_state[player.index].bp_entites_previously_in_range = tbl_deep_copy(entities)
 
         -- No tiles will be handed over, because
         -- deconstructible-tile-proxy will already be
@@ -160,6 +207,11 @@ local function no_tool(player)
         -- Do the work...
         reprioritize(entities, tiles, player.surface, player.index, use_tool, disable_msg)    
     end
+end
+
+local function toggle_button(player, toggled)
+    player.set_shortcut_toggled("bot-prio-shortcut", toggled)
+    global.player_state[player.index].bp_toggled = toggled
 end
 
 -- Main function that starts it all
@@ -173,7 +225,8 @@ local function on_hotkey_main(event)
     if not global.player_state[event.player_index] then 
         global.player_state[event.player_index] = {
             bp_hint = 0,
-            bp_toggled = false
+            bp_toggled = false,
+            bp_entites_previously_in_range = {}
         } 
     end
 
@@ -185,13 +238,19 @@ local function on_hotkey_main(event)
 
 
     if use_tool then
+        toggle_button(player, false)
         produce_tool(player)
     elseif not use_toggle then
-        no_tool(player)
+        toggle_button(player, false)
+        no_tool(player, disable_msg, false) -- Not moving
     else --! use_tool = false, use_toggle = true
-        local tggld = player.is_shortcut_toggled("botprio-toggling")
-        player.set_shortcut_toggled("botprio-toggling", not tggld)
-        global.player_state[event.player_index].bp_toggled = not tggld
+        if event.name == defines.events.on_player_changed_position then
+            no_tool(player, true, true) -- No messaging and moving around!
+        else
+            local tggld = player.is_shortcut_toggled("bot-prio-shortcut")
+            toggle_button(player, not tggld)
+        end
+
     end
 
 end
@@ -199,8 +258,9 @@ end
 -- Runs after player selected stuff
 local function handle_selection(event)
     if not event.item == 'bot-prioritizer' then return end
+
+    local use_tool = true -- kind of obvious, here
     local player = game.get_player(event.player_index)
-    local use_tool = personal_setting_value(player, "botprio-use-selection")
     local disable_msg = personal_setting_value(player, "botprio-disable-msg")
     reprioritize(event.entities, event.tiles, event.surface, event.player_index, use_tool, disable_msg)
 end
@@ -212,8 +272,20 @@ local function bot_prio_shortcut(event)
     end
 end
 
+-- Track player movement
+local function handle_player_move(event)
+    -- runs only every 1/10th of a second, could lead to problems
+    -- if player moves very fast. But performance is more important.
+    --if game.tick % 6 ~= 0 then return end 
+    if not global.player_state then return end
+    if not global.player_state[event.player_index] then return end
+    if not global.player_state[event.player_index].bp_toggled then return end
+    event.item = 'bot-prioritizer'
+    on_hotkey_main(event)
+end
 
--- Debugging command
+
+-- Debugging commands
 local function dbg_cmd(cmd) 
     if cmd.name ~= "botprio_debug" then return end
 
@@ -265,6 +337,9 @@ script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
 -- Gather entity ghosts and give bots priority after selction is made
 script.on_event(defines.events.on_player_selected_area, handle_selection)
 script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
+
+-- Track movement for "Auto-Mode"
+script.on_event(defines.events.on_player_changed_position,handle_player_move)
 
 -- Add a debugging command
 commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, dbg_cmd)
