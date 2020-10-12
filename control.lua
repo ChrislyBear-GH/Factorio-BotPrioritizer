@@ -1,6 +1,6 @@
 
 -- Grab settings value
-function personal_setting_value(player, name)
+local function personal_setting_value(player, name)
     if player and player.mod_settings and player.mod_settings[name] then
       return player.mod_settings[name].value
     else
