@@ -1,6 +1,3 @@
--- Table to keep track of upgrades. The built-in function is unreliable.
-if global.upgrades then global.upgrades = global.upgrades
-else global.upgrades = {} end
 
 -- Grab settings value
 function personal_setting_value(player, name)
@@ -15,13 +12,11 @@ end
 local function handle_ordered_upgrades(event)
     local nr = event.entity.unit_number
 
-    if global.upgrades then global.upgrades = global.upgrades
-    else global.upgrades = {} end
-
-    if not global.upgrades[nr] then
+    if not global.upgrades then 
+        global.upgrades = {} 
+    elseif not global.upgrades[nr] then
         global.upgrades[nr] = { e = event.entity, t = event.target.name }
     end
-
 end
 
 -- Remove upgrades from our table if they have been cancelled
@@ -35,14 +30,30 @@ end
 
 -- Clear stale entites from upgrade table
 local function remove_stale_upgrades()
-    if global.upgrades then global.upgrades = global.upgrades
-    else global.upgrades = {} end
+    if not global.upgrades then global.upgrades = {} end
 
     for unit_nr, data in pairs(global.upgrades) do
         if not data.e.valid or not data.e or not data.e.to_be_upgraded then
             global.upgrades[unit_nr] = nil
         end
     end
+end
+
+
+local function print_result(player, count, use_tool)
+    local msg = "" 
+    if count > 0 then
+        msg = msg .. "Re-Assigned " .. count .. " work orders"
+    else
+        msg = msg .. "No work orders found"
+    end
+
+    if use_tool then
+        msg = msg .. " in selection."
+    else
+        msg = msg .. " in personal roboport area."
+    end
+    player.print(msg)
 end
 
 -- Main logic to reassign bot work orders
@@ -81,7 +92,7 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
                     entity.cancel_upgrade(force)
                     entity.order_upgrade({force = entity.force, target = upgrade_proto, player = player})
                     cnt = cnt + 1
-                else
+                elseif global.debug then
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
             end
@@ -105,37 +116,14 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
     -- Report outcome.
     -- feedback for the player.
     if not disable_msg then 
-
-        local msg = "" 
-        if cnt > 0 then
-            msg = msg .. "Re-Assigned " .. cnt .. " work orders"
-        else
-            msg = msg .. "No work orders found"
-        end
-
-        if use_tool then
-            msg = msg .. " in selection."
-        else
-            msg = msg .. " in personal roboport area."
-        end
-        player.print(msg)
+        print_result(player, cnt, use_tool)
     end
     
 end
 
-
 -- Produces a selection tool and takes it away again
--- or reprioritzes right away, depending on setting
-local function on_hotkey_main(event)
-    if not event.item == 'bot-prioritizer' then return end
-
-    local player = game.get_player(event.player_index)
-    local use_tool = personal_setting_value(player, "botprio-use-selection")
-    local disable_msg = personal_setting_value(player, "botprio-disable-msg")
-
-    if use_tool then
-        -- once in a save game, a message is displayed giving a hint for the tool use
-        global.bprio_hint_tool = global.bprio_hint_tool or 0
+local function produce_tool(player)
+            -- once in a save game, a message is displayed giving a hint for the tool use        
         if global.bprio_hint_tool == 0 then
             player.print({"bot-prio.hint-tool"})
             global.bprio_hint_tool = 1
@@ -145,32 +133,53 @@ local function on_hotkey_main(event)
         if player.clean_cursor() then
             player.cursor_stack.set_stack({name = 'bot-prioritizer', type = 'selection-tool', count = 1})
         end
+end
 
-    else
-        -- Make sure god mode isn't used and there's an actual character on the ground
-        if player.character and player.character.valid then
-            local char = player.character
-    
-            if not char.logistic_cell then 
-                player.print("Personal roboport not equipped.")
-                return
-            end
-            local c_rad = char.logistic_cell.construction_radius or 0
-            local pos = player.position
+local function no_tool(player)
+    -- Make sure god mode isn't used and there's an actual character on the ground
+    if player.character and player.character.valid then
+        local char = player.character
 
-            local entities = player.surface.find_entities_filtered({
-                    area={{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}},
-                    force = player.force
-                })
-
-            -- No tiles will be handed over, because
-            -- deconstructible-tile-proxy will already be
-            -- in the entities table.
-            local tiles = {}
-            
-            -- Do the work...
-            reprioritize(entities, tiles, player.surface, event.player_index, use_tool, disable_msg)    
+        if not char.logistic_cell then 
+            player.print("Personal roboport not equipped.")
+            return
         end
+        local c_rad = char.logistic_cell.construction_radius or 0
+        local pos = player.position
+
+        local entities = player.surface.find_entities_filtered({
+                area={{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}},
+                force = player.force
+            })
+
+        -- No tiles will be handed over, because
+        -- deconstructible-tile-proxy will already be
+        -- in the entities table.
+        local tiles = {}
+        
+        -- Do the work...
+        reprioritize(entities, tiles, player.surface, player.index, use_tool, disable_msg)    
+    end
+end
+
+-- Produces a selection tool and takes it away again
+-- or reprioritzes right away, depending on setting
+local function on_hotkey_main(event)
+    if not event.item == 'bot-prioritizer' then return end
+
+    -- Check if Globals exist, if not create them
+    if not global.upgrades then global.upgrades = {} end
+    if not global.debug then global.debug = false end
+    if not global.bprio_hint_tool then global.bprio_hint_tool = 0 end
+
+    local player = game.get_player(event.player_index)
+    local use_tool = personal_setting_value(player, "botprio-use-selection")
+    local disable_msg = personal_setting_value(player, "botprio-disable-msg")
+
+    if use_tool then
+        produce_tool(player)
+    else
+        no_tool(player)
     end
 
 end
@@ -192,10 +201,50 @@ local function bot_prio_shortcut(event)
 end
 
 
+-- Debugging command
+local function dbg_cmd(cmd) 
+    if cmd.name ~= "botprio_debug" then return end
+
+    local plr = game.get_player(cmd.player_index)
+    local param = cmd.parameter
+
+    local switch = {
+        ["on"] = function()
+                global.debug = true
+                return "Debug mode enabled."
+                end,
+        ["off"] = function()
+                global.debug = false
+                return "Debug mode disabled."
+                end,
+        ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
+    }
+
+    if not param or  not switch[param] == nil then 
+        plr.print({"bot-prio.cmd-help"})
+    else
+        local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
+        plr.print(s)
+    end
+end
+
+
+-- On_load to initialize the upgrade tracking table if it is missing
+local function on_init()
+    -- Table to keep track of upgrades. The built-in function is unreliable.
+    if not global.upgrades then global.upgrades = {} end
+    if not global.debug then global.debug = false end
+    if not global.bprio_hint_tool then global.bprio_hint_tool = 0 end
+end
+
+
+-- Event hooks
+script.on_init(on_init)
+
 -- Hotkey
 script.on_event( "botprio-hotkey", on_hotkey_main)
 -- Shortcut button
-script.on_event( defines.events.on_lua_shortcut, bot_prio_shortcut)
+script.on_event(defines.events.on_lua_shortcut, bot_prio_shortcut)
 
 -- Handle upgrade orders because get_upgrade_target() is unreliable
 script.on_event(defines.events.on_marked_for_upgrade, handle_ordered_upgrades)
@@ -204,3 +253,6 @@ script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
 -- Gather entity ghosts and give bots priority after selction is made
 script.on_event(defines.events.on_player_selected_area, handle_selection)
 script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
+
+-- Add a debugging command
+commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, dbg_cmd)
