@@ -124,9 +124,9 @@ end
 -- Produces a selection tool and takes it away again
 local function produce_tool(player)
             -- once in a save game, a message is displayed giving a hint for the tool use        
-        if global.bprio_hint_tool == 0 then
+        if global.bp_hint == 0 then
             player.print({"bot-prio.hint-tool"})
-            global.bprio_hint_tool = 1
+            global.bp_hint = 1
         end
 
         -- Put a selection tool in the player's hand
@@ -162,25 +162,36 @@ local function no_tool(player)
     end
 end
 
--- Produces a selection tool and takes it away again
--- or reprioritzes right away, depending on setting
+-- Main function that starts it all
 local function on_hotkey_main(event)
     if not event.item == 'bot-prioritizer' then return end
 
     -- Check if Globals exist, if not create them
     if not global.upgrades then global.upgrades = {} end
     if not global.debug then global.debug = false end
-    if not global.bprio_hint_tool then global.bprio_hint_tool = 0 end
+    if not global.player_state then global.player_state = {} end
+    if not global.player_state[event.player_index] then 
+        global.player_state[event.player_index] = {
+            bp_hint = 0,
+            bp_toggled = false
+        } 
+    end
 
     local player = game.get_player(event.player_index)
     local use_tool = personal_setting_value(player, "botprio-use-selection")
     local disable_msg = personal_setting_value(player, "botprio-disable-msg")
-    local toggle = personal_setting_value(player, "botprio-toggling")
+    local use_toggle = personal_setting_value(player, "botprio-toggling")
+
+
 
     if use_tool then
         produce_tool(player)
-    else
+    elseif not use_toggle then
         no_tool(player)
+    else --! use_tool = false, use_toggle = true
+        local tggld = player.is_shortcut_toggled("botprio-toggling")
+        player.set_shortcut_toggled("botprio-toggling", not tggld)
+        global.player_state[event.player_index].bp_toggled = not tggld
     end
 
 end
@@ -235,7 +246,7 @@ local function on_init()
     -- Table to keep track of upgrades. The built-in function is unreliable.
     if not global.upgrades then global.upgrades = {} end
     if not global.debug then global.debug = false end
-    if not global.bprio_hint_tool then global.bprio_hint_tool = 0 end
+    if not global.bp_hint then global.bp_hint = 0 end
 end
 
 
