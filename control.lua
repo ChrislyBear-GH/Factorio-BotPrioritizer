@@ -8,6 +8,19 @@ local function personal_setting_value(player, name)
     end
 end
 
+-- Debug rendering
+local function debug_draw_bot_area(player, bounding_box)
+    local render_id = rendering.draw_rectangle({
+        color={1,0,0},
+        width=2,
+        filled=false,
+        left_top=bounding_box[1],
+        right_bottom=bounding_box[2],
+        surface=player.surface,
+        time_to_live=120,
+    })
+end
+
 -- Add information about upgrades to our table
 local function handle_ordered_upgrades(event)
     local nr = event.entity.unit_number
@@ -135,7 +148,8 @@ local function produce_tool(player)
         end
 end
 
-local function no_tool(player)
+local function no_tool(player, disable_msg)
+    local use_tool = false -- kind of obvious, here
     -- Make sure god mode isn't used and there's an actual character on the ground
     if player.character and player.character.valid then
         local char = player.character
@@ -146,9 +160,12 @@ local function no_tool(player)
         end
         local c_rad = char.logistic_cell.construction_radius or 0
         local pos = player.position
+        local bbox = {{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}}
+
+        if global.debug then debug_draw_bot_area(player, bbox) end
 
         local entities = player.surface.find_entities_filtered({
-                area={{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}},
+                area=bbox,
                 force = player.force
             })
 
@@ -162,15 +179,19 @@ local function no_tool(player)
     end
 end
 
--- Produces a selection tool and takes it away again
--- or reprioritzes right away, depending on setting
+-- Main function that starts it all
 local function on_hotkey_main(event)
     if not event.item == 'bot-prioritizer' then return end
 
     -- Check if Globals exist, if not create them
     if not global.upgrades then global.upgrades = {} end
     if not global.debug then global.debug = false end
-    if not global.bprio_hint_tool then global.bprio_hint_tool = 0 end
+    if not global.player_state then global.player_state = {} end
+    if not global.player_state[event.player_index] then 
+        global.player_state[event.player_index] = {
+            bp_hint = 0,
+        } 
+    end
 
     local player = game.get_player(event.player_index)
     local use_tool = personal_setting_value(player, "botprio-use-selection")
@@ -179,7 +200,7 @@ local function on_hotkey_main(event)
     if use_tool then
         produce_tool(player)
     else
-        no_tool(player)
+        no_tool(player, disable_msg)
     end
 
 end
@@ -187,8 +208,9 @@ end
 -- Runs after player selected stuff
 local function handle_selection(event)
     if not event.item == 'bot-prioritizer' then return end
+
+    local use_tool = true -- kind of obvious, here
     local player = game.get_player(event.player_index)
-    local use_tool = personal_setting_value(player, "botprio-use-selection")
     local disable_msg = personal_setting_value(player, "botprio-disable-msg")
     reprioritize(event.entities, event.tiles, event.surface, event.player_index, use_tool, disable_msg)
 end
