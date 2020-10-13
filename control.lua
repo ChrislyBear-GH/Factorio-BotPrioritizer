@@ -137,9 +137,9 @@ end
 -- Produces a selection tool and takes it away again
 local function produce_tool(player)
             -- once in a save game, a message is displayed giving a hint for the tool use        
-        if global.bprio_hint_tool == 0 then
+        if global.player_state[player.index].bp_hint == 0 then
             player.print({"bot-prio.hint-tool"})
-            global.bprio_hint_tool = 1
+            global.player_state[player.index].bp_hint = 1
         end
 
         -- Put a selection tool in the player's hand
