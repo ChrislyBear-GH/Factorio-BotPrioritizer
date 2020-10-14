@@ -11,12 +11,12 @@ local function on_init()
 end
 
 -- Main logic to reassign bot work orders
-local function reprioritize(entities, tiles, surface, player_index, use_tool, disable_msg)
+local function reprioritize(entities, tiles, player, event)
 
     -- Keep updgrade table clean
     up_mgr.remove_stale_upgrades()
 
-    local player = game.get_player(player_index)
+    local surface = player.surface
     local force = player.force
     local cnt = 0
 
@@ -71,8 +71,8 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
     end
 
     -- Report outcome.
-    if not disable_msg then 
-        hlp.print_result(player, cnt, use_tool)
+    if not global.player_state[player.index].bp_disable_msg and not (event.name == defines.events.on_tick) then 
+        hlp.print_result(player, cnt)
     end
     
 end
@@ -91,13 +91,13 @@ local function produce_tool(player)
         end
 end
 
-local function no_tool(player, disable_msg, plr_moving)
+local function no_tool(player, event)
     local p_use_tool = false -- kind of obvious, here
     -- Make sure god mode isn't used and there's an actual character on the ground
     if player.character and player.character.valid then
         local char = player.character
 
-        if not char.logistic_cell then 
+        if not char.logistic_cell and global.debug then 
             player.print("Personal roboport not equipped.")
             return
         end
@@ -112,8 +112,8 @@ local function no_tool(player, disable_msg, plr_moving)
             force = player.force
         })
 
-        if plr_moving then
-            entities = historian.filter_for_new_entities()
+        if tick_event then
+            -- entities = historian.filter_for_new_entities()
         end
 
         -- TODO: Implement logic to stop reassigning already reassigned entities!
@@ -126,7 +126,7 @@ local function no_tool(player, disable_msg, plr_moving)
         local tiles = {}
         
         -- Do the work...
-        reprioritize(entities, tiles, player.surface, player.index, p_use_tool, disable_msg)    
+        reprioritize(entities, tiles, player, event)    
     end
 end
 
@@ -137,16 +137,19 @@ end
 
 -- Main function that starts it all
 local function on_hotkey_main(event)
-    if not (event.item == 'bot-prioritizer') then return end
+    if not (event.item == 'bot-prioritizer') and not (event.input_name == "botprio-hotkey") then return end
 
-    -- Check if Globals exist, if not create them (reuse init function)
+    -- Check if globals exist, if not create them (reuse init function)
     on_init()
     if not global.player_state[event.player_index] then 
         global.player_state[event.player_index] = {
             bp_hint = 0,
+            bp_use_tool = true,
+            bp_use_toggle = false,
+            bp_disable_msg = false,
             bp_toggled = false,
             bp_entity_history = {},
-            bp_history_ticks = 60,
+            bp_history_time = 5
         } 
     end
     -- Just to catch a missing history table from previous versions
@@ -155,19 +158,25 @@ local function on_hotkey_main(event)
     end
 
     local player = game.get_player(event.player_index)
-    local use_tool = hlp.personal_setting_value(player, "botprio-use-selection")
-    local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    local use_toggle = hlp.personal_setting_value(player, "botprio-toggling")
+    local pidx = event.player_index
 
-    if use_tool then
+    global.player_state[pidx].bp_use_tool = hlp.personal_setting_value(player, "botprio-use-selection")
+    global.player_state[pidx].bp_disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
+    global.player_state[pidx].bp_use_toggle = hlp.personal_setting_value(player, "botprio-toggling")
+    -- Get the player's setting into a global variable for later use!
+    if global.player_state[pidx].bp_use_toggle then 
+        global.player_state[pidx].bp_history_time = hlp.personal_setting_value(player, "botprio-toggling-time")
+    end
+
+    if global.player_state[pidx].bp_use_tool then
         toggle_button(player, false)
         produce_tool(player)
-    elseif not use_toggle then
+    elseif not global.player_state[pidx].bp_use_toggle then
         toggle_button(player, false)
-        no_tool(player, disable_msg, false) -- Not moving
+        no_tool(player, event) -- Not on_tick
     else --! use_tool = false, use_toggle = true
-        if event.name == defines.events.on_player_changed_position then
-            no_tool(player, true, true) -- No messaging and moving around!
+        if event.name == defines.events.on_tick then
+            no_tool(player, event) -- No messaging and on_tick around!
         else
             local tggld = player.is_shortcut_toggled("bot-prio-shortcut")
             toggle_button(player, not tggld)
@@ -180,11 +189,8 @@ end
 -- Runs after player selected stuff
 local function handle_selection(event)
 if not (event.item == 'bot-prioritizer') then return end
-
-    local p_use_tool = true -- kind of obvious, here
     local player = game.get_player(event.player_index)
-    local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    reprioritize(event.entities, event.tiles, event.surface, event.player_index, p_use_tool, disable_msg)
+    reprioritize(event.entities, event.tiles, player, event)
 end
 
 -- Start it from shortcut instead of hotkey
@@ -196,15 +202,19 @@ local function bot_prio_shortcut(event)
 end
 
 -- Track player movement
-local function handle_player_move(event)
-    -- runs only every 1/10th of a second, could lead to problems
+local function handle_ticks(event)
+    -- runs only every 1/6th of a second, could lead to problems
     -- if player moves very fast. But performance is more important.
-    --if game.tick % 6 ~= 0 then return end 
-    if not global.player_state then return end
-    if not global.player_state[event.player_index] then return end
-    if not global.player_state[event.player_index].bp_toggled then return end
+    if game.tick % 10 ~= 0 then return end 
     event.item = 'bot-prioritizer'
-    on_hotkey_main(event)
+    if not global.player_state then return end
+    
+    for _, player in pairs(game.players) do
+        if not global.player_state[player.index] then return end
+        if not global.player_state[player.index].bp_toggled then return end
+        event.player_index = player.index
+        on_hotkey_main(event)
+    end
 end
 
 
@@ -212,6 +222,9 @@ end
 
 -- Event hooks
 script.on_init(on_init)
+
+-- "Auto-Mode" must run each nth tick
+script.on_event(defines.events.on_tick,handle_ticks)
 
 -- Hotkey
 script.on_event( "botprio-hotkey", on_hotkey_main)
@@ -226,8 +239,6 @@ script.on_event(defines.events.on_cancelled_upgrade, up_mgr.handle_cancelled_upg
 script.on_event(defines.events.on_player_selected_area, handle_selection)
 script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
 
--- Track movement for "Auto-Mode"
-script.on_event(defines.events.on_player_changed_position,handle_player_move)
 
 -- Add a debugging command
 commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, hlp.dbg_cmd)
