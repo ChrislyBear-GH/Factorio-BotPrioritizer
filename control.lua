@@ -15,6 +15,7 @@ local function reprioritize(entities, tiles, player, event)
 
     -- Keep updgrade table clean
     up_mgr.remove_stale_upgrades()
+    
     -- Clean history for player
     historian.purge_history(player, event)
 
@@ -125,14 +126,6 @@ local function no_tool(player, event)
             force = player.force
         })
 
-        if tick_event then
-            -- entities = historian.filter_for_new_entities()
-        end
-
-        -- TODO: Implement logic to stop reassigning already reassigned entities!
-
-        --global.player_state[player.index].bp_entites_previously_in_range = tbl_deep_copy(entities)
-
         -- No tiles will be handed over, because
         -- deconstructible-tile-proxy will already be
         -- in the entities table.
@@ -218,13 +211,12 @@ end
 local function handle_ticks(event)
     -- runs only every 1/6th of a second, could lead to problems
     -- if player moves very fast. But performance is more important.
-    if game.tick % 20 ~= 0 then return end 
-    event.item = 'bot-prioritizer'
     if not global.player_state then return end
-    
     for _, player in pairs(game.players) do
+        if game.tick % hlp.personal_setting_value(player, "botprio-toggling-frequency") ~= 0 then return end 
         if not global.player_state[player.index] then return end
         if not global.player_state[player.index].bp_toggled then return end
+        event.item = 'bot-prioritizer'
         event.player_index = player.index
         on_hotkey_main(event)
     end
