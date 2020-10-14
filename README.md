@@ -3,7 +3,7 @@
 [selection]: https://i.ibb.co/DQz1vw0/selection.png "Screenshot of the selection tool"
 [settings]: https://i.ibb.co/Czh9QdG/settings.png "Mod settings"
 
-# Bot Prioritizer 0.1.4
+# Bot Prioritizer 0.2.0
 
 ## A mod to help with building things quicker
 
@@ -23,7 +23,7 @@ You have the option to
 - just reassign jobs in your personal roboport construction area directly.  
 &nbsp;
 
-You can choose between these two options in the mod settings:
+You can choose between these two options in the mod settings:  
 ![Mod settings][settings]
 
 (Since it doesn't change a thing in your game and only gives your personal robots priority I don't find it neccessary to set any hurdles to use the selection tool/ability)
@@ -37,7 +37,7 @@ After installing the mod, there are two ways to use it:
 - You can click the shortcut button located next to the quickbar here:  
 ![Button location in the quickbar][quickbar]
 
-- Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:
+- Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:  
 ![Keyboard configuration page][controls]
 
 Each of the two options will either **activate the selection tool** or **do the re-prioritization right away**, depending on the **mod settings**. 

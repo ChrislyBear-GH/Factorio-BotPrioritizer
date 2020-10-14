@@ -32,7 +32,7 @@ function helpers.print_result(player, count)
         msg = msg .. "No work orders found"
     end
 
-    if global.player_state[player.index].bp_use_tool then
+    if (global.player_state[player.index].bp_method == "Selection Tool") then
         msg = msg .. " in selection."
     else
         msg = msg .. " in personal roboport area."

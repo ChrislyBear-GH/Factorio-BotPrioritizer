@@ -138,7 +138,6 @@ end
 
 local function toggle_button(player, toggled)
     player.set_shortcut_toggled("bot-prio-shortcut", toggled)
-    global.player_state[player.index].bp_toggled = toggled
 end
 
 -- Main function that starts it all
@@ -150,12 +149,11 @@ local function on_hotkey_main(event)
     if not global.player_state[event.player_index] then 
         global.player_state[event.player_index] = {
             bp_hint = 0,
-            bp_use_tool = true,
-            bp_use_toggle = false,
+            bp_method = "Selection Tool",
             bp_disable_msg = false,
-            bp_toggled = false,
             bp_entity_history = {},
-            bp_history_time = 5
+            bp_history_time = 5,
+            bp_tick_freq = 20
         } 
     end
     -- Just to catch a missing history table from previous versions
@@ -166,18 +164,18 @@ local function on_hotkey_main(event)
     local player = game.get_player(event.player_index)
     local pidx = event.player_index
 
-    global.player_state[pidx].bp_use_tool = hlp.personal_setting_value(player, "botprio-use-selection")
+    global.player_state[pidx].bp_method = hlp.personal_setting_value(player, "botprio-method")
     global.player_state[pidx].bp_disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    global.player_state[pidx].bp_use_toggle = hlp.personal_setting_value(player, "botprio-toggling")
     -- Get the player's setting into a global variable for later use!
-    if global.player_state[pidx].bp_use_toggle then 
+    if global.player_state[pidx].bp_method == "Auto-Mode" then 
         global.player_state[pidx].bp_history_time = hlp.personal_setting_value(player, "botprio-toggling-time")
+        global.player_state[pidx].bp_tick_freq = hlp.personal_setting_value(player, "botprio-toggling-frequency")
     end
 
-    if global.player_state[pidx].bp_use_tool then
+    if global.player_state[pidx].bp_method == "Selection Tool" then
         toggle_button(player, false)
         produce_tool(player)
-    elseif not global.player_state[pidx].bp_use_toggle then
+    elseif not global.player_state[pidx].bp_method == "Direct Selection" then
         toggle_button(player, false)
         no_tool(player, event) -- Not on_tick
     else --! use_tool = false, use_toggle = true
@@ -213,12 +211,15 @@ local function handle_ticks(event)
     -- if player moves very fast. But performance is more important.
     if not global.player_state then return end
     for _, player in pairs(game.players) do
-        if game.tick % hlp.personal_setting_value(player, "botprio-toggling-frequency") ~= 0 then return end 
-        if not global.player_state[player.index] then return end
-        if not global.player_state[player.index].bp_toggled then return end
-        event.item = 'bot-prioritizer'
-        event.player_index = player.index
-        on_hotkey_main(event)
+        if game.tick % (global.player_state[player.index].bp_tick_freq or 20) == 0 then  
+            if global.player_state[player.index] then 
+                if (global.player_state[pidx].bp_method == "Auto-Mode") and player.is_shortcut_toggled("bot-prio-shortcut") then 
+                    event.item = 'bot-prioritizer'
+                    event.player_index = player.index
+                    on_hotkey_main(event)
+                end
+            end
+        end
     end
 end
 

@@ -1,17 +1,11 @@
 data:extend({
     {
-      type = "bool-setting",
-      name = "botprio-use-selection",
+      type = "string-setting",
+      name = "botprio-method",
       setting_type = "runtime-per-user",
-      default_value = true,
+      default_value = "Selection Tool",
+      allowed_values = {"Selection Tool", "Direct Selection", "Auto-Mode"},
       order = 'a[botprio]-a'
-    },
-    {
-      type = "bool-setting",
-      name = "botprio-toggling",
-      setting_type = "runtime-per-user",
-      default_value = false,
-      order = 'a[botprio]-b'
     },
     {
       type = "int-setting",
