@@ -15,19 +15,23 @@ local function reprioritize(entities, tiles, player, event)
 
     -- Keep updgrade table clean
     up_mgr.remove_stale_upgrades()
+    -- Clean history for player
+    historian.purge_history(player, event)
 
     local surface = player.surface
     local force = player.force
     local cnt = 0
 
     for _, entity in pairs(entities) do
-        if entity.valid then
+        local refreshed_entity = nil
+        if entity.valid and not historian.in_history(player, entity) then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
                 -- Try to keep existing circuit connections
                 local new = hlp.tbl_deep_copy(entity.clone({position = entity.position, force = entity.force}))
                 circ_mgr.copy_circuit_connections(entity, new)
 
                 if new then
+                    refreshed_entity = new
                     entity.destroy()
                     cnt = cnt + 1
                 end
@@ -37,9 +41,14 @@ local function reprioritize(entities, tiles, player, event)
                     local tile = surface.get_tile(entity.position)
                     tile.cancel_deconstruction(force, player)
                     tile.order_deconstruction(force, player)
+                    
+                    local pos = tile.position
+                    pos.x, pos.y = pos.x + .5, pos.y + .5
+                    refreshed_entity = surface.find_entity('deconstructible-tile-proxy', pos)
                 else -- regular entities
                     entity.cancel_deconstruction(force)
                     entity.order_deconstruction(force)
+                    refreshed_entity = entity
                 end
                 cnt = cnt + 1
             elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
@@ -48,23 +57,27 @@ local function reprioritize(entities, tiles, player, event)
                 if upgrade_proto then
                     entity.cancel_upgrade(force)
                     entity.order_upgrade({force = entity.force, target = upgrade_proto, player = player})
+                    refreshed_entity = entity
                     cnt = cnt + 1
                 elseif global.debug then
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
             end
+            if refreshed_entity then historian.add_to_history(player, refreshed_entity, event) end
         end
     end
 
     -- Only used with the selection tool
     for _, tile in pairs(tiles) do
-        if tile.valid then
+        if tile.valid and not historian.in_history(player, tile) then
             --! API request tile.to_be_deconstructed()
             local pos = tile.position
             pos.x, pos.y = pos.x + .5, pos.y + .5
             if surface.find_entity('deconstructible-tile-proxy', pos) then
                 tile.cancel_deconstruction(force, player)
                 tile.order_deconstruction(force, player)
+
+                historian.add_to_history(player, tile, event)
                 cnt = cnt + 1
             end
         end
@@ -205,7 +218,7 @@ end
 local function handle_ticks(event)
     -- runs only every 1/6th of a second, could lead to problems
     -- if player moves very fast. But performance is more important.
-    if game.tick % 10 ~= 0 then return end 
+    if game.tick % 20 ~= 0 then return end 
     event.item = 'bot-prioritizer'
     if not global.player_state then return end
     
