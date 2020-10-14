@@ -175,7 +175,7 @@ local function on_hotkey_main(event)
     if global.player_state[pidx].bp_method == "Selection Tool" then
         toggle_button(player, false)
         produce_tool(player)
-    elseif not (global.player_state[pidx].bp_method == "Direct Selection") then
+    elseif global.player_state[pidx].bp_method == "Direct Selection" then
         toggle_button(player, false)
         no_tool(player, event) -- Not on_tick
     else --! use_tool = false, use_toggle = true
@@ -223,6 +223,22 @@ local function handle_ticks(event)
     end
 end
 
+local function settings_changed(event)
+    if event.setting:sub(1, 8) ~= "botprio-" then return end
+    local player = game.get_player(event.player_index)
+    if not global.player_state[event.player_index] then global.player_state[event.player_index] = {} end
+
+    if event.setting == "botprio-method" then
+        global.player_state[event.player_index].bp_method = hlp.personal_setting_value(player, "botprio-method")
+    elseif event.setting == "botprio-toggling-frequency" then
+        global.player_state[event.player_index].bp_tick_freq = hlp.personal_setting_value(player, "botprio-toggling-frequency") 
+    elseif event.setting == "botprio-toggling-time" then
+        global.player_state[event.player_index].bp_history_time = hlp.personal_setting_value(player, "botprio-toggling-time")
+    elseif event.setting == "botprio-disable-msg" then
+        global.player_state[event.player_index].bp_disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
+    end
+end
+
 
 
 
@@ -247,4 +263,7 @@ script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
 
 
 -- Add a debugging command
-commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, hlp.dbg_cmd)
+commands.add_command("bp-debug", {"bot-prio.cmd-help"}, hlp.dbg_cmd)
+
+-- Keep settings in global variables
+script.on_event(defines.events.on_runtime_mod_setting_changed, settings_changed)

@@ -42,7 +42,7 @@ end
 
 -- Debugging command
 function helpers.dbg_cmd(cmd) 
-if cmd.name ~= "botprio_debug" then return end
+if cmd.name ~= "bp-debug" then return end
 
 local plr = game.get_player(cmd.player_index)
     local param = cmd.parameter
@@ -59,7 +59,7 @@ local plr = game.get_player(cmd.player_index)
         ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
     }
 
-    if not param or  not (switch[param] == nil) then 
+    if not param or not switch[param] then 
         plr.print({"bot-prio.cmd-help"})
     else
         local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
