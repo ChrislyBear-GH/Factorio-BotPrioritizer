@@ -1,4 +1,4 @@
-local up_mgr
+local up_mgr = {}
 
 -- Add information about upgrades to our table
 function up_mgr.handle_ordered_upgrades(event)

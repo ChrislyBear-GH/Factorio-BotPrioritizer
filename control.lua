@@ -1,9 +1,14 @@
-local hlp = require("helpers.lua")
-local up_mgr = require("upgrade_manager.lua")
+local hlp = require("helpers")
+local up_mgr = require("upgrade_manager")
 
+-- On_load to initialize the upgrade tracking table if it is missing
+local function on_init()
+    if not global.upgrades then global.upgrades = {} end
+    if not global.debug then global.debug = false end
+    if not global.player_state then global.player_state = {} end
+end
 
 -- Main logic to reassign bot work orders
--- Returns: Number of reassigned work orders
 local function reprioritize(entities, tiles, surface, player_index, use_tool, disable_msg)
 
     -- Keep updgrade table clean
@@ -66,7 +71,7 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
     
 end
 
--- Produces a selection tool and takes it away again
+-- Produces a selection tool
 local function produce_tool(player)
             -- once in a save game, a message is displayed giving a hint for the tool use        
         if global.player_state[player.index].bp_hint == 0 then
@@ -81,7 +86,7 @@ local function produce_tool(player)
 end
 
 local function no_tool(player, disable_msg, plr_moving)
-    local use_tool = false -- kind of obvious, here
+    local p_use_tool = false -- kind of obvious, here
     -- Make sure god mode isn't used and there's an actual character on the ground
     if player.character and player.character.valid then
         local char = player.character
@@ -112,7 +117,7 @@ local function no_tool(player, disable_msg, plr_moving)
         local tiles = {}
         
         -- Do the work...
-        reprioritize(entities, tiles, player.surface, player.index, use_tool, disable_msg)    
+        reprioritize(entities, tiles, player.surface, player.index, p_use_tool, disable_msg)    
     end
 end
 
@@ -123,23 +128,22 @@ end
 
 -- Main function that starts it all
 local function on_hotkey_main(event)
-    if not event.item == 'bot-prioritizer' then return end
+    if not (event.item == 'bot-prioritizer') then return end
 
-    -- Check if Globals exist, if not create them
-    if not global.upgrades then global.upgrades = {} end
-    if not global.debug then global.debug = false end
-    if not global.player_state then global.player_state = {} end
+    -- Check if Globals exist, if not create them (reuse init function)
+    on_init()
     if not global.player_state[event.player_index] then 
         global.player_state[event.player_index] = {
             bp_hint = 0,
             bp_toggled = false,
-            bp_entites_previously_in_range = {}
+            bp_entity_history = {}
         } 
     end
 
     local player = game.get_player(event.player_index)
     local use_tool = hlp.personal_setting_value(player, "botprio-use-selection")
     local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
+    local use_toggle = hlp.personal_setting_value(player, "botprio-toggling")
 
     if use_tool then
         toggle_button(player, false)
@@ -161,17 +165,18 @@ end
 
 -- Runs after player selected stuff
 local function handle_selection(event)
-    if not event.item == 'bot-prioritizer' then return end
+if not (event.item == 'bot-prioritizer') then return end
 
-    local use_tool = true -- kind of obvious, here
+    local p_use_tool = true -- kind of obvious, here
     local player = game.get_player(event.player_index)
     local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    reprioritize(event.entities, event.tiles, event.surface, event.player_index, use_tool, disable_msg)
+    reprioritize(event.entities, event.tiles, event.surface, event.player_index, p_use_tool, disable_msg)
 end
 
 -- Start it from shortcut instead of hotkey
 local function bot_prio_shortcut(event)
     if event.prototype_name == "bot-prio-shortcut" then
+        event.item = 'bot-prioritizer'
         on_hotkey_main(event)
     end
 end
@@ -188,13 +193,7 @@ local function handle_player_move(event)
     on_hotkey_main(event)
 end
 
--- On_load to initialize the upgrade tracking table if it is missing
-local function on_init()
-    -- Table to keep track of upgrades. The built-in function is unreliable.
-    if not global.upgrades then global.upgrades = {} end
-    if not global.debug then global.debug = false end
-    if not global.bp_hint then global.bp_hint = 0 end
-end
+
 
 
 -- Event hooks

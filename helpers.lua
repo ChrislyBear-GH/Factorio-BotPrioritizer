@@ -23,6 +23,7 @@ function helpers.debug_draw_bot_area(player, bounding_box)
     })
 end
 
+-- Print results
 function helpers.print_result(player, count, use_tool)
     local msg = "" 
     if count > 0 then
@@ -44,26 +45,51 @@ function helpers.dbg_cmd(cmd)
 if cmd.name ~= "botprio_debug" then return end
 
 local plr = game.get_player(cmd.player_index)
-local param = cmd.parameter
+    local param = cmd.parameter
 
-local switch = {
-    ["on"] = function()
-            global.debug = true
-            return "Debug mode enabled."
-            end,
-    ["off"] = function()
-            global.debug = false
-            return "Debug mode disabled."
-            end,
-    ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
-}
+    local switch = {
+        ["on"] = function()
+                global.debug = true
+                return "Debug mode enabled."
+                end,
+        ["off"] = function()
+                global.debug = false
+                return "Debug mode disabled."
+                end,
+        ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
+    }
 
-if not param or  not switch[param] == nil then 
-    plr.print({"bot-prio.cmd-help"})
-else
-    local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
-    plr.print(s)
+    if not param or  not switch[param] == nil then 
+        plr.print({"bot-prio.cmd-help"})
+    else
+        local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
+        plr.print(s)
+    end
 end
+
+-- flib function for deep copying.
+-- One function isn't worth a dependency
+local function tbl_deep_copy(tbl)
+    local lookup_table = {}
+    local function _copy(object)
+        if type(object) ~= "table" then
+            return object
+            -- don't copy factorio rich objects
+        elseif object.__self then
+            return object
+        elseif lookup_table[object] then
+            return lookup_table[object]
+        end
+
+        local new_table = {}
+        lookup_table[object] = new_table
+        for index, value in pairs(object) do
+            new_table[_copy(index)] = _copy(value)
+        end
+
+        return setmetatable(new_table, getmetatable(object))
+    end
+    return _copy(tbl)
 end
 
 return helpers
