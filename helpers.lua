@@ -24,7 +24,7 @@ function helpers.debug_draw_bot_area(player, bounding_box)
 end
 
 -- Print results
-function helpers.print_result(player, count, use_tool)
+function helpers.print_result(player, count)
     local msg = "" 
     if count > 0 then
         msg = msg .. "Re-Assigned " .. count .. " work orders"
@@ -32,7 +32,7 @@ function helpers.print_result(player, count, use_tool)
         msg = msg .. "No work orders found"
     end
 
-    if use_tool then
+    if global.player_state[player.index].bp_use_tool then
         msg = msg .. " in selection."
     else
         msg = msg .. " in personal roboport area."
