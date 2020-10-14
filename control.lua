@@ -1,6 +1,7 @@
 local hlp = require("helpers")
 local up_mgr = require("upgrade_manager")
 local circ_mgr = require("circuit_manager")
+local historian = require("history")
 
 -- On_load to initialize the upgrade tracking table if it is missing
 local function on_init()
@@ -106,11 +107,14 @@ local function no_tool(player, disable_msg, plr_moving)
 
         if global.debug then hlp.debug_draw_bot_area(player, bbox) end
 
-            local entities = player.surface.find_entities_filtered({
-                area=bbox,
-                force = player.force
-            })
-        
+        local entities = player.surface.find_entities_filtered({
+            area=bbox,
+            force = player.force
+        })
+
+        if plr_moving then
+            entities = historian.filter_for_new_entities()
+        end
 
         -- TODO: Implement logic to stop reassigning already reassigned entities!
 
@@ -141,7 +145,8 @@ local function on_hotkey_main(event)
         global.player_state[event.player_index] = {
             bp_hint = 0,
             bp_toggled = false,
-            bp_entity_history = {}
+            bp_entity_history = {},
+            bp_history_ticks = 60,
         } 
     end
     -- Just to catch a missing history table from previous versions

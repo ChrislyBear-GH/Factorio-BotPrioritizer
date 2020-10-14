@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: ????
+  Features:
+    - Continuously take over construction jobs!
+    - Item request slots now work as well!
+  Fixes:
+    - TODO: Circuits
+---------------------------------------------------------------------------------------------------
 Version: 0.1.4
 Date: 2020-10-10
   Features:
