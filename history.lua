@@ -1,6 +1,7 @@
 local hst = {}
 
-function hst.in_history(player, entity) 
+function hst.in_history(player, entity)
+    if not (global.player_state[player.index].bp_method == "Auto-Mode") then return end
     return (global.player_state[player.index].bp_entity_history[entity.unit_number] ~= nil)
 end
 
@@ -14,6 +15,7 @@ function hst.purge_history(player, event)
 end
 
 function hst.add_to_history(player, entity, event)
+    if not (global.player_state[player.index].bp_method == "Auto-Mode") then return end
     global.player_state[player.index].bp_entity_history[entity.unit_number] = event.tick
 end
 
