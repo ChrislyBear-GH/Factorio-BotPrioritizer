@@ -1,5 +1,6 @@
 local hlp = require("helpers")
 local up_mgr = require("upgrade_manager")
+local circ_mgr = require("circuit_manager")
 
 -- On_load to initialize the upgrade tracking table if it is missing
 local function on_init()
@@ -21,7 +22,11 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
     for _, entity in pairs(entities) do
         if entity.valid then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
-                if entity.clone({position = entity.position, force = entity.force}) then
+                -- Try to keep existing circuit connections
+                local new = hlp.tbl_deep_copy(entity.clone({position = entity.position, force = entity.force}))
+                circ_mgr.copy_circuit_connections(entity, new)
+
+                if new then
                     entity.destroy()
                     cnt = cnt + 1
                 end
@@ -107,7 +112,7 @@ local function no_tool(player, disable_msg, plr_moving)
             })
         
 
-            -- TODO: Implement logic to stop reassigning already reassigned entities!
+        -- TODO: Implement logic to stop reassigning already reassigned entities!
 
         --global.player_state[player.index].bp_entites_previously_in_range = tbl_deep_copy(entities)
 
@@ -138,6 +143,10 @@ local function on_hotkey_main(event)
             bp_toggled = false,
             bp_entity_history = {}
         } 
+    end
+    -- Just to catch a missing history table from previous versions
+    if not global.player_state[event.player_index].bp_entity_history then 
+        global.player_state[event.player_index].bp_entity_history = {}
     end
 
     local player = game.get_player(event.player_index)

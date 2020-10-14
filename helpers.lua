@@ -69,7 +69,7 @@ end
 
 -- flib function for deep copying.
 -- One function isn't worth a dependency
-local function tbl_deep_copy(tbl)
+function helpers.tbl_deep_copy(tbl)
     local lookup_table = {}
     local function _copy(object)
         if type(object) ~= "table" then
