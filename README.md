@@ -55,7 +55,12 @@ It will work on:
 
 ![Screenshot of the selection tool][selection]
 
-Currently I'm still working on Item Request Orders, i.e. module requests for assemblers, fuel requests for trains. I'm not sure if this is already covered by Upgrade Orders.
+------------------------
+
+## Kown Bugs/Things under construction
+
+- Circuit connections get messed up in v0.1.4! It's on my TODO list.
+- I'm still working on Item Request Orders, i.e. module requests for assemblers, fuel requests for trains. I'm not sure if this is already covered by Upgrade Orders.
 
 ------------------------
 
@@ -77,7 +82,9 @@ Luckily @Optera mentioned an alternative in a comment  in another mod's discussi
 
 Credit where credit is due:
 
-- [Nilaus](https://www.twitch.tv/nilaus), who streams over at Twitch.tv and makes excellent YouTube videos, for the original method that inspired this mod!
+
+- Thanks to reddit users [u/Thinkingwithportals1](https://www.reddit.com/user/Thinkingwithportals1), who posted the [thread](https://www.reddit.com/r/factorio/comments/j614f4/400_hours_in_im_still_discovering_tricks/g7vq7nb/) and [u/DerUwe](https://www.reddit.com/user/DerUwe) whose [comment](https://www.reddit.com/r/factorio/comments/j614f4/400_hours_in_im_still_discovering_tricks/g7vq7nb/) sparked the idea to make a mod out of "undoing" build orders.
+- [Nilaus](https://www.twitch.tv/nilaus), who streams over at Twitch.tv and makes excellent YouTube videos, for the original method that also inspired this mod!
 - [Optera](https://mods.factorio.com/user/Optera) for the [idea](https://mods.factorio.com/mod/GhostScanner/discussion/5d4e4346bf0746000dcd3c55) that made handling upgrades possible.
 - Thanks to [Nexela](https://mods.factorio.com/user/Nexela) for taking the time to refactor and improve my code when I asked for advice! 
 - Thanks to [Theanderblast](https://mods.factorio.com/user/Theanderblast). I shamelessly copied a few things from his [Max Rate Calculator](https://mods.factorio.com/mod/MaxRateCalculator) mod because I had no idea how to add such a tool into the game.
