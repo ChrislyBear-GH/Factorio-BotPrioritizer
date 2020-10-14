@@ -1,105 +1,13 @@
+local hlp = require("helpers.lua")
+local up_mgr = require("upgrade_manager.lua")
 
--- Grab settings value
-local function personal_setting_value(player, name)
-    if player and player.mod_settings and player.mod_settings[name] then
-      return player.mod_settings[name].value
-    else
-      return nil
-    end
-end
-
--- Debug rendering
-local function debug_draw_bot_area(player, bounding_box)
-    local render_id = rendering.draw_rectangle({
-        color={1,0,0},
-        width=2,
-        filled=false,
-        left_top=bounding_box[1],
-        right_bottom=bounding_box[2],
-        surface=player.surface,
-        time_to_live=120,
-    })
-end
-
--- flib function for deep copying.
--- One function isn't worth a dependency
-local function tbl_deep_copy(tbl)
-    local lookup_table = {}
-    local function _copy(object)
-        if type(object) ~= "table" then
-            return object
-            -- don't copy factorio rich objects
-        elseif object.__self then
-            return object
-        elseif lookup_table[object] then
-            return lookup_table[object]
-        end
-
-        local new_table = {}
-        lookup_table[object] = new_table
-        for index, value in pairs(object) do
-            new_table[_copy(index)] = _copy(value)
-        end
-
-        return setmetatable(new_table, getmetatable(object))
-    end
-    return _copy(tbl)
-end
-
--- Add information about upgrades to our table
-local function handle_ordered_upgrades(event)
-    local nr = event.entity.unit_number
-
-    if not global.upgrades then 
-        global.upgrades = {} 
-    elseif not global.upgrades[nr] then
-        global.upgrades[nr] = { e = event.entity, t = event.target.name }
-    end
-end
-
--- Remove upgrades from our table if they have been cancelled
-local function handle_cancelled_upgrades(event)
-    local nr = event.entity.unit_number
-
-    if global.upgrades and global.upgrades[nr] then
-        global.upgrades[nr] = nil
-    end
-end
-
--- Clear stale entites from upgrade table
-local function remove_stale_upgrades()
-    if not global.upgrades then global.upgrades = {} end
-
-    for unit_nr, data in pairs(global.upgrades) do
-        if not data.e.valid or not data.e or not data.e.to_be_upgraded then
-            global.upgrades[unit_nr] = nil
-        end
-    end
-end
-
-
-local function print_result(player, count, use_tool)
-    local msg = "" 
-    if count > 0 then
-        msg = msg .. "Re-Assigned " .. count .. " work orders"
-    else
-        msg = msg .. "No work orders found"
-    end
-
-    if use_tool then
-        msg = msg .. " in selection."
-    else
-        msg = msg .. " in personal roboport area."
-    end
-    player.print(msg)
-end
 
 -- Main logic to reassign bot work orders
 -- Returns: Number of reassigned work orders
 local function reprioritize(entities, tiles, surface, player_index, use_tool, disable_msg)
 
     -- Keep updgrade table clean
-    remove_stale_upgrades()
+    up_mgr.remove_stale_upgrades()
 
     local player = game.get_player(player_index)
     local force = player.force
@@ -152,9 +60,8 @@ local function reprioritize(entities, tiles, surface, player_index, use_tool, di
     end
 
     -- Report outcome.
-    -- feedback for the player.
     if not disable_msg then 
-        print_result(player, cnt, use_tool)
+        hlp.print_result(player, cnt, use_tool)
     end
     
 end
@@ -162,9 +69,9 @@ end
 -- Produces a selection tool and takes it away again
 local function produce_tool(player)
             -- once in a save game, a message is displayed giving a hint for the tool use        
-        if global.bp_hint == 0 then
+        if global.player_state[player.index].bp_hint == 0 then
             player.print({"bot-prio.hint-tool"})
-            global.bp_hint = 1
+            global.player_state[player.index].bp_hint = 1
         end
 
         -- Put a selection tool in the player's hand
@@ -187,7 +94,7 @@ local function no_tool(player, disable_msg, plr_moving)
         local pos = player.position
         local bbox = {{pos.x - c_rad, pos.y - c_rad},{pos.x + c_rad, pos.y + c_rad}}
 
-        if global.debug then debug_draw_bot_area(player, bbox) end
+        if global.debug then hlp.debug_draw_bot_area(player, bbox) end
 
             local entities = player.surface.find_entities_filtered({
                 area=bbox,
@@ -231,11 +138,8 @@ local function on_hotkey_main(event)
     end
 
     local player = game.get_player(event.player_index)
-    local use_tool = personal_setting_value(player, "botprio-use-selection")
-    local disable_msg = personal_setting_value(player, "botprio-disable-msg")
-    local use_toggle = personal_setting_value(player, "botprio-toggling")
-
-
+    local use_tool = hlp.personal_setting_value(player, "botprio-use-selection")
+    local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
 
     if use_tool then
         toggle_button(player, false)
@@ -261,7 +165,7 @@ local function handle_selection(event)
 
     local use_tool = true -- kind of obvious, here
     local player = game.get_player(event.player_index)
-    local disable_msg = personal_setting_value(player, "botprio-disable-msg")
+    local disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
     reprioritize(event.entities, event.tiles, event.surface, event.player_index, use_tool, disable_msg)
 end
 
@@ -284,35 +188,6 @@ local function handle_player_move(event)
     on_hotkey_main(event)
 end
 
-
--- Debugging commands
-local function dbg_cmd(cmd) 
-    if cmd.name ~= "botprio_debug" then return end
-
-    local plr = game.get_player(cmd.player_index)
-    local param = cmd.parameter
-
-    local switch = {
-        ["on"] = function()
-                global.debug = true
-                return "Debug mode enabled."
-                end,
-        ["off"] = function()
-                global.debug = false
-                return "Debug mode disabled."
-                end,
-        ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
-    }
-
-    if not param or  not switch[param] == nil then 
-        plr.print({"bot-prio.cmd-help"})
-    else
-        local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
-        plr.print(s)
-    end
-end
-
-
 -- On_load to initialize the upgrade tracking table if it is missing
 local function on_init()
     -- Table to keep track of upgrades. The built-in function is unreliable.
@@ -331,8 +206,8 @@ script.on_event( "botprio-hotkey", on_hotkey_main)
 script.on_event(defines.events.on_lua_shortcut, bot_prio_shortcut)
 
 -- Handle upgrade orders because get_upgrade_target() is unreliable
-script.on_event(defines.events.on_marked_for_upgrade, handle_ordered_upgrades)
-script.on_event(defines.events.on_cancelled_upgrade, handle_cancelled_upgrades)
+script.on_event(defines.events.on_marked_for_upgrade, up_mgr.handle_ordered_upgrades)
+script.on_event(defines.events.on_cancelled_upgrade, up_mgr.handle_cancelled_upgrades)
 
 -- Gather entity ghosts and give bots priority after selction is made
 script.on_event(defines.events.on_player_selected_area, handle_selection)
@@ -342,4 +217,4 @@ script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
 script.on_event(defines.events.on_player_changed_position,handle_player_move)
 
 -- Add a debugging command
-commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, dbg_cmd)
+commands.add_command("botprio_debug", {"bot-prio.cmd-help"}, hlp.dbg_cmd)
