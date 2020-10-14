@@ -175,7 +175,7 @@ local function on_hotkey_main(event)
     if global.player_state[pidx].bp_method == "Selection Tool" then
         toggle_button(player, false)
         produce_tool(player)
-    elseif not global.player_state[pidx].bp_method == "Direct Selection" then
+    elseif not (global.player_state[pidx].bp_method == "Direct Selection") then
         toggle_button(player, false)
         no_tool(player, event) -- Not on_tick
     else --! use_tool = false, use_toggle = true
@@ -213,7 +213,7 @@ local function handle_ticks(event)
     for _, player in pairs(game.players) do
         if game.tick % (global.player_state[player.index].bp_tick_freq or 20) == 0 then  
             if global.player_state[player.index] then 
-                if (global.player_state[pidx].bp_method == "Auto-Mode") and player.is_shortcut_toggled("bot-prio-shortcut") then 
+                if (global.player_state[player.index].bp_method == "Auto-Mode") and player.is_shortcut_toggled("bot-prio-shortcut") then 
                     event.item = 'bot-prioritizer'
                     event.player_index = player.index
                     on_hotkey_main(event)

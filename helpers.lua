@@ -59,7 +59,7 @@ local plr = game.get_player(cmd.player_index)
         ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
     }
 
-    if not param or  not switch[param] == nil then 
+    if not param or  not (switch[param] == nil) then 
         plr.print({"bot-prio.cmd-help"})
     else
         local s = type(switch[param]) == "function" and switch[param]() or t[v] or {"bot-prio.cmd-help"}
