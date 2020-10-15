@@ -26,6 +26,8 @@ local function reprioritize(event, player, entities, tiles)
     for _, entity in pairs(entities) do
         local refreshed_entity = nil -- One variable to collect them all
 
+        -- surface.find_entities_filtered({area=entity.bounding_box, name='item-request-proxy'})
+
         if entity.valid and not historian.in_history(player, entity) then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
                 -- Try to keep existing circuit connections
@@ -56,7 +58,7 @@ local function reprioritize(event, player, entities, tiles)
                 cnt = cnt + 1
                 
             elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
-                -- local upgrade_proto = entity.get_upgrade_target() -- This doesn't work for some reason!
+                -- local upgrade_proto = entity.get_upgrade_target() -- Bug in 1.0 Will be fixed in 1.1 https://forums.factorio.com/viewtopic.php?p=515964
                 local upgrade_proto = global.upgrades[entity.unit_number].t
                 if upgrade_proto then
                     entity.cancel_upgrade(force)
@@ -66,6 +68,16 @@ local function reprioritize(event, player, entities, tiles)
                 elseif global.debug then
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
+
+            elseif entity.name == "item-request-proxy" then
+                refreshed_entity = hlp.tbl_deep_copy(surface.create_entity({
+                                                    name=entity.name,
+                                                    target=entity.proxy_target,
+                                                    position=entity.position,
+                                                    force=force,
+                                                    modules=entity.item_requests
+                                                }))
+                entity.destroy()
             end
             if refreshed_entity then historian.add_to_history(event, player, refreshed_entity) end
         end
