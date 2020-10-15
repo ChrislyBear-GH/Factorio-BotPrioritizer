@@ -57,17 +57,17 @@ end
 
 -- Print results
 function helpers.print_result(player, count)
-    local msg = "" 
+    local msg = {}
     if count > 0 then
-        msg = msg .. {"bot-prio.msg-reassigned-1"} .. count .. {"bot-prio.msg-reassigned-2"}
+        msg[#msg+1], msg[#msg+2] = "bot-prio.msg-reassigned", count
     else
-        msg = msg .. {"bot-prio.msg-none-found"}
+        msg[#msg+1] = "bot-prio.msg-none-found"
     end
 
     if (global.player_state[player.index].bp_method == "Selection Tool") then
-        msg = msg .. {"bot-prio.msg-in-selection"}
+        msg[#msg+1] = {"bot-prio.msg-in-selection"}
     else
-        msg = msg .. {"bot-prio.msg-in-area"}
+        msg[#msg+1] = {"bot-prio.msg-in-area"}
     end
     player.print(msg)
 end
@@ -88,7 +88,7 @@ local plr = game.get_player(cmd.player_index)
                 global.debug = false
                 return {"bot-prio.msg-debug-mode-off"}
                 end,
-        ["status"] = function() return {"bot-prio.msg-debug-mode-help-1"} .. (global.debug and {"bot-prio.msg-debug-mode-help-2"} or {"bot-prio.msg-debug-mode-help-3"}) end
+        ["status"] = function() return {"bot-prio.msg-debug-mode-help-1", global.debug and {"bot-prio.msg-debug-mode-help-2"} or {"bot-prio.msg-debug-mode-help-3"}} end
     }
 
     if not param or not switch[param] then 
