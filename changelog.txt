@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.0
-Date: ????
+Date: 2020-10-15
   Features:
     - There's now an "Auto-Mode", that continuously takes over construction jobs.
       It's basically the "Direct Select" mode, but without clicking the button manually.
