@@ -68,7 +68,7 @@ local function reprioritize(event, player, entities, tiles)
                     refreshed_entity = entity
                     cnt = cnt + 1
                 elseif global.debug and not upgrade_trg then
-                    player.print("ERROR: Couldn't find out upgrade target.")
+                    player.print({"bot-prio.msg-no-upgrade-found"})
                 end
 
             elseif entity.name == "item-request-proxy" then
@@ -136,7 +136,7 @@ local function no_tool(event, player)
         local char = player.character
 
         if not char.logistic_cell then 
-            if global.debug then player.print("Personal roboport not equipped.") end
+            if global.debug then player.print({"bot-prio.msg-no-roboport-equipped"}) end
             return
         end
         local c_rad = char.logistic_cell.construction_radius or 0

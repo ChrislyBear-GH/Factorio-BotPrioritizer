@@ -57,17 +57,17 @@ end
 
 -- Print results
 function helpers.print_result(player, count)
-    local msg = "" 
+    local msg = {}
     if count > 0 then
-        msg = msg .. "Reassigned " .. count .. " work orders"
+        msg[#msg+1], msg[#msg+2] = "bot-prio.msg-reassigned", count
     else
-        msg = msg .. "No fulfillable work orders found"
+        msg[#msg+1] = "bot-prio.msg-none-found"
     end
 
     if (global.player_state[player.index].bp_method == "Selection Tool") then
-        msg = msg .. " in selection."
+        msg[#msg+1] = {"bot-prio.msg-in-selection"}
     else
-        msg = msg .. " in personal roboport area."
+        msg[#msg+1] = {"bot-prio.msg-in-area"}
     end
     player.print(msg)
 end
@@ -82,13 +82,13 @@ local plr = game.get_player(cmd.player_index)
     local switch = {
         ["on"] = function()
                 global.debug = true
-                return "Debug mode enabled."
+                return {"bot-prio.msg-debug-mode-on"}
                 end,
         ["off"] = function()
                 global.debug = false
-                return "Debug mode disabled."
+                return {"bot-prio.msg-debug-mode-off"}
                 end,
-        ["status"] = function() return "Debug mode is " .. (global.debug and "enabled." or "disabled.") end
+        ["status"] = function() return {"bot-prio.msg-debug-mode-help-1", global.debug and {"bot-prio.msg-debug-mode-help-2"} or {"bot-prio.msg-debug-mode-help-3"}} end
     }
 
     if not param or not switch[param] then 
