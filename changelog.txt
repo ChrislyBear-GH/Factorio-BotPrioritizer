@@ -8,6 +8,8 @@ Date: ????
       Auto-Mode specific settings to tune how frequent it'll run (every Xth tick; turn up to save UPS)
       and how long it'll wait until it tries another reprioritization (turn up for slower bots)
     - Item request slots for modules and fuel, etc. now work as well!
+    - German translation added. Translations are always welcome! Copy the "locale/en/locale.cfg" file
+      and send me a translated version if you want to help out :)
   Changes:
     - Renamed operation modes:
       "Selection Tool": Uses a selection tool to start the reprioritization
