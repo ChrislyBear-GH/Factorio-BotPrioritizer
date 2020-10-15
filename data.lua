@@ -39,7 +39,7 @@ data:extend(
 		order = "b[blueprints]-h[bot-prio]",
 		action = "lua",
 		associated_control_input = "botprio-hotkey",
-		toggleable = false,
+		toggleable = true,
 		icon =
 		{
 		  filename = "__BotPrioritizer__/graphics/bot-prioritizer.png",

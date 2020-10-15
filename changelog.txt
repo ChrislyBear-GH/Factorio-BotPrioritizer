@@ -1,4 +1,23 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: ????
+  Features:
+    - There's now an "Auto-Mode", that continuously takes over construction jobs.
+      It's basically the "Direct Select" mode, but without clicking the button manually.
+    - Additional Settings:
+      Auto-Mode specific settings to tune how frequent it'll run (every Xth tick; turn up to save UPS)
+      and how long it'll wait until it tries another reprioritization (turn up for slower bots)
+    - Item request slots for modules and fuel, etc. now work as well!
+  Changes:
+    - Renamed operation modes:
+      "Selection Tool": Uses a selection tool to start the reprioritization
+      "Direct Select": Uses the personal roboport range as selection area
+      "Auto-Mode": Same as Direct Select mode, but doing the operation continuously
+    - Work orders are only reissued if the player has the material to fullfill the 
+      order in their inventory.
+  Fix:
+    - Circuit connections are now retained
+---------------------------------------------------------------------------------------------------
 Version: 0.1.4
 Date: 2020-10-10
   Features:
