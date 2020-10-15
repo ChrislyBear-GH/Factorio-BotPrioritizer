@@ -9,6 +9,38 @@ function helpers.personal_setting_value(player, name)
     end
 end
 
+-- Cache player settings in global player state
+function helpers.cache_player_settings(player)
+    local pidx = player.index
+
+    if not global.player_state[pidx] then 
+        global.player_state[pidx] = {
+            bp_hint = 0,
+            bp_method = "Selection Tool",
+            bp_disable_msg = false,
+            bp_entity_history = {},
+            bp_history_time = 5,
+            bp_tick_freq = 20
+        } 
+    end
+
+    -- Just to catch a missing history table from previous versions
+    if not global.player_state[pidx].bp_entity_history then 
+        global.player_state[pidx].bp_entity_history = {}
+    end
+
+    global.player_state[pidx].bp_method = helpers.personal_setting_value(player, "botprio-method")
+    global.player_state[pidx].bp_disable_msg = helpers.personal_setting_value(player, "botprio-disable-msg")
+    -- Get the player's setting into a global variable for later use!
+    if global.player_state[pidx].bp_method == "Auto-Mode" then 
+        global.player_state[pidx].bp_history_time = helpers.personal_setting_value(player, "botprio-toggling-time")
+        global.player_state[pidx].bp_tick_freq = helpers.personal_setting_value(player, "botprio-toggling-frequency")
+    else
+        player.set_shortcut_toggled("bot-prio-shortcut", false)
+    end
+
+end
+
 
 -- Debug rendering
 function helpers.debug_draw_bot_area(player, bounding_box)

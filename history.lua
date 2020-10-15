@@ -12,7 +12,7 @@ function hst.in_history(player, entity)
     end
 end
 
-function hst.purge_history(player, event)
+function hst.purge_history(event, player)
     local purge_time = global.player_state[player.index].bp_history_time
     for id, tick in pairs(global.player_state[player.index].bp_entity_history) do
         if tick < (event.tick - purge_time * 60) then
@@ -21,7 +21,7 @@ function hst.purge_history(player, event)
     end
 end
 
-function hst.add_to_history(player, entity, event)
+function hst.add_to_history(event, player, entity)
     if not (global.player_state[player.index].bp_method == "Auto-Mode") then return end
 
     if entity.object_name == "LuaEntity" then

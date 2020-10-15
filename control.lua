@@ -11,13 +11,13 @@ local function on_init()
 end
 
 -- Main logic to reassign bot work orders
-local function reprioritize(entities, tiles, player, event)
+local function reprioritize(event, player, entities, tiles)
 
     -- Keep updgrade table clean
     up_mgr.remove_stale_upgrades()
     
     -- Clean history for player
-    historian.purge_history(player, event)
+    historian.purge_history(event, player)
 
     local surface = player.surface
     local force = player.force
@@ -67,7 +67,7 @@ local function reprioritize(entities, tiles, player, event)
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
             end
-            if refreshed_entity then historian.add_to_history(player, refreshed_entity, event) end
+            if refreshed_entity then historian.add_to_history(event, player, refreshed_entity) end
         end
     end
 
@@ -81,7 +81,7 @@ local function reprioritize(entities, tiles, player, event)
                 tile.cancel_deconstruction(force, player)
                 tile.order_deconstruction(force, player)
 
-                historian.add_to_history(player, tile, event)
+                historian.add_to_history(event, player, tile)
                 cnt = cnt + 1
             end
         end
@@ -108,14 +108,13 @@ local function produce_tool(player)
         end
 end
 
-local function no_tool(player, event)
-    local p_use_tool = false -- kind of obvious, here
+local function no_tool(event, player)
     -- Make sure god mode isn't used and there's an actual character on the ground
     if player.character and player.character.valid then
         local char = player.character
 
-        if not char.logistic_cell and global.debug then 
-            player.print("Personal roboport not equipped.")
+        if not char.logistic_cell then 
+            if global.debug then player.print("Personal roboport not equipped.") end
             return
         end
         local c_rad = char.logistic_cell.construction_radius or 0
@@ -135,76 +134,39 @@ local function no_tool(player, event)
         local tiles = {}
         
         -- Do the work...
-        reprioritize(entities, tiles, player, event)    
+        reprioritize(event, player, entities, tiles)    
     end
-end
-
-local function toggle_button(player, toggled)
-    player.set_shortcut_toggled("bot-prio-shortcut", toggled)
-end
-
--- Main function that starts it all
-local function on_hotkey_main(event)
-    if not (event.item == 'bot-prioritizer') and not (event.input_name == "botprio-hotkey") then return end
-
-    -- Check if globals exist, if not create them (reuse init function)
-    on_init()
-    if not global.player_state[event.player_index] then 
-        global.player_state[event.player_index] = {
-            bp_hint = 0,
-            bp_method = "Selection Tool",
-            bp_disable_msg = false,
-            bp_entity_history = {},
-            bp_history_time = 5,
-            bp_tick_freq = 20
-        } 
-    end
-    -- Just to catch a missing history table from previous versions
-    if not global.player_state[event.player_index].bp_entity_history then 
-        global.player_state[event.player_index].bp_entity_history = {}
-    end
-
-    local player = game.get_player(event.player_index)
-    local pidx = event.player_index
-
-    global.player_state[pidx].bp_method = hlp.personal_setting_value(player, "botprio-method")
-    global.player_state[pidx].bp_disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    -- Get the player's setting into a global variable for later use!
-    if global.player_state[pidx].bp_method == "Auto-Mode" then 
-        global.player_state[pidx].bp_history_time = hlp.personal_setting_value(player, "botprio-toggling-time")
-        global.player_state[pidx].bp_tick_freq = hlp.personal_setting_value(player, "botprio-toggling-frequency")
-    end
-
-    if global.player_state[pidx].bp_method == "Selection Tool" then
-        toggle_button(player, false)
-        produce_tool(player)
-    elseif global.player_state[pidx].bp_method == "Direct Selection" then
-        toggle_button(player, false)
-        no_tool(player, event) -- Not on_tick
-    else --! use_tool = false, use_toggle = true
-        if event.name == defines.events.on_tick then
-            no_tool(player, event) -- No messaging and on_tick around!
-        else
-            local tggld = player.is_shortcut_toggled("bot-prio-shortcut")
-            toggle_button(player, not tggld)
-        end
-
-    end
-
 end
 
 -- Runs after player selected stuff
 local function handle_selection(event)
 if not (event.item == 'bot-prioritizer') then return end
     local player = game.get_player(event.player_index)
-    reprioritize(event.entities, event.tiles, player, event)
+    reprioritize(event, player, event.entities, event.tiles)
 end
 
 -- Start it from shortcut instead of hotkey
-local function bot_prio_shortcut(event)
-    if event.prototype_name == "bot-prio-shortcut" then
-        event.item = 'bot-prioritizer'
-        on_hotkey_main(event)
+local function handle_shortcut_and_hotkey(event)
+    if not (event.prototype_name == "bot-prio-shortcut"
+            or event.input_name == "botprio-hotkey") then return end
+
+    -- Check if globals exist, if not create them (reuse init function)
+    on_init()
+
+    -- Get player and update their settings
+    local pidx = event.player_index
+    local player = game.get_player(pidx)
+
+    hlp.cache_player_settings(player)
+
+    -- Depending on operation mode do different things
+    if global.player_state[pidx].bp_method == "Selection Tool" then
+        produce_tool(player)
+    elseif global.player_state[pidx].bp_method == "Direct Selection" then
+        no_tool(event, player)
+    else 
+        player.set_shortcut_toggled("bot-prio-shortcut", 
+                                    not player.is_shortcut_toggled("bot-prio-shortcut"))
     end
 end
 
@@ -214,32 +176,24 @@ local function handle_ticks(event)
     -- if player moves very fast. But performance is more important.
     if not global.player_state then return end
     for _, player in pairs(game.players) do
-        if game.tick % (global.player_state[player.index].bp_tick_freq or 20) == 0 then  
-            if global.player_state[player.index] then 
-                if (global.player_state[player.index].bp_method == "Auto-Mode") and player.is_shortcut_toggled("bot-prio-shortcut") then 
-                    event.item = 'bot-prioritizer'
-                    event.player_index = player.index
-                    on_hotkey_main(event)
+
+        if global.player_state[player.index] then -- Cached settings available
+            if game.tick % (global.player_state[player.index].bp_tick_freq or 20) == 0 then  -- Keep frequency for player
+                if (global.player_state[player.index].bp_method == "Auto-Mode") and player.is_shortcut_toggled("bot-prio-shortcut") then -- Active
+                    no_tool(event, player)
                 end
             end
         end
+
     end
 end
 
 local function settings_changed(event)
     if event.setting:sub(1, 8) ~= "botprio-" then return end
+    
     local player = game.get_player(event.player_index)
-    if not global.player_state[event.player_index] then global.player_state[event.player_index] = {} end
+    hlp.cache_player_settings(player)
 
-    if event.setting == "botprio-method" then
-        global.player_state[event.player_index].bp_method = hlp.personal_setting_value(player, "botprio-method")
-    elseif event.setting == "botprio-toggling-frequency" then
-        global.player_state[event.player_index].bp_tick_freq = hlp.personal_setting_value(player, "botprio-toggling-frequency") 
-    elseif event.setting == "botprio-toggling-time" then
-        global.player_state[event.player_index].bp_history_time = hlp.personal_setting_value(player, "botprio-toggling-time")
-    elseif event.setting == "botprio-disable-msg" then
-        global.player_state[event.player_index].bp_disable_msg = hlp.personal_setting_value(player, "botprio-disable-msg")
-    end
 end
 
 
@@ -249,12 +203,12 @@ end
 script.on_init(on_init)
 
 -- "Auto-Mode" must run each nth tick
-script.on_event(defines.events.on_tick,handle_ticks)
+script.on_event(defines.events.on_tick, handle_ticks)
 
 -- Hotkey
-script.on_event( "botprio-hotkey", on_hotkey_main)
+script.on_event( "botprio-hotkey", handle_shortcut_and_hotkey)
 -- Shortcut button
-script.on_event(defines.events.on_lua_shortcut, bot_prio_shortcut)
+script.on_event(defines.events.on_lua_shortcut, handle_shortcut_and_hotkey)
 
 -- Handle upgrade orders because get_upgrade_target() is unreliable
 script.on_event(defines.events.on_marked_for_upgrade, up_mgr.handle_ordered_upgrades)
