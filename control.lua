@@ -14,7 +14,7 @@ end
 -- Main logic to reassign bot work orders
 local function reprioritize(event, player, entities, tiles)
 
-    -- Keep updgrade table clean
+    -- Keep upgrade table clean
     up_mgr.remove_stale_upgrades()
     
     -- Clean history for player
@@ -72,7 +72,7 @@ local function reprioritize(event, player, entities, tiles)
                 end
 
             elseif entity.name == "item-request-proxy" then
-                -- First check if we can fullfill anyting
+                -- First check if we can fulfill anything
                 local has_items = 0
                 for name, count in pairs(entity.item_requests) do
                     if inv_hlp.in_inventory(player, name) then has_items = has_items + 1 end
@@ -236,7 +236,7 @@ script.on_event(defines.events.on_lua_shortcut, handle_shortcut_and_hotkey)
 script.on_event(defines.events.on_marked_for_upgrade, up_mgr.handle_ordered_upgrades)
 script.on_event(defines.events.on_cancelled_upgrade, up_mgr.handle_cancelled_upgrades)
 
--- Gather entity ghosts and give bots priority after selction is made
+-- Gather entity ghosts and give bots priority after selection is made
 script.on_event(defines.events.on_player_selected_area, handle_selection)
 script.on_event(defines.events.on_player_alt_selected_area, handle_selection)
 

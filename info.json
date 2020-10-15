@@ -1,7 +1,7 @@
 {
     "name": "BotPrioritizer",
     "version": "0.2.0",
-    "title": "Bot Prioritzer",
+    "title": "Bot Prioritizer",
     "author": "ChrislyBear",
     "factorio_version": "1.0",
     "dependencies": ["base >= 1.0"],

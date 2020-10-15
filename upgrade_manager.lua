@@ -20,7 +20,7 @@ function up_mgr.handle_cancelled_upgrades(event)
     end
 end
 
--- Clear stale entites from upgrade table
+-- Clear stale entities from upgrade table
 function up_mgr.remove_stale_upgrades()
     if not global.upgrades then global.upgrades = {} end
 
