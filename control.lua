@@ -24,7 +24,8 @@ local function reprioritize(entities, tiles, player, event)
     local cnt = 0
 
     for _, entity in pairs(entities) do
-        local refreshed_entity = nil
+        local refreshed_entity = nil -- One variable to collect them all
+
         if entity.valid and not historian.in_history(player, entity) then
             if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
                 -- Try to keep existing circuit connections
@@ -36,6 +37,7 @@ local function reprioritize(entities, tiles, player, event)
                     entity.destroy()
                     cnt = cnt + 1
                 end
+
             elseif entity ~= nil and entity.to_be_deconstructed() then -- handle entities to be deconstructed
                 -- Tiles have their own 'deconstruction' entity
                 if entity.name == 'deconstructible-tile-proxy' then
@@ -52,6 +54,7 @@ local function reprioritize(entities, tiles, player, event)
                     refreshed_entity = entity
                 end
                 cnt = cnt + 1
+                
             elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
                 -- local upgrade_proto = entity.get_upgrade_target() -- This doesn't work for some reason!
                 local upgrade_proto = global.upgrades[entity.unit_number].t
