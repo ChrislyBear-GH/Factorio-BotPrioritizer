@@ -10,13 +10,13 @@
 Have you ever stood in front of a large blueprint that is going **to be built** or things **to be upgraded** with all the neccessary things **in your pocket** and your **personal robots ready to go**, but **nothing happens** because the **base robots** took the job and are on their long, long way?  
 Or have you ever **deconstructed** a few things to quickly **place them somewhere else** but the base robots **took everything far away** into the central logistics storage?
 
-**Then this mod is for you!** With this tool you can select entities and try to **re-issue the work orders**, so that your **personal construction bots can take over!**
+**Then this mod is for you!** With this tool you can select entities and try to **reissue the work orders**, so that your **personal construction bots can take over!**
 
 -------------------------------------
 
 ## What's being provided by this mod?
 
-This mod provides the ability to reassign jobs to your personal robots.  
+This mod provides the ability to reassign/'reprioritize'/reissue jobs to your personal robots.  
 You have the option to  
 
 - use a selection-tool that doesn't have to be researched or crafted, or to
@@ -40,11 +40,11 @@ After installing the mod, there are two ways to use it:
 - Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:  
 ![Keyboard configuration page][controls]
 
-Each of the two options will either **activate the selection tool** or **do the re-prioritization right away**, depending on the **mod settings**. 
+Each of the two options will either **activate the selection tool** or **do the reprioritization right away**, depending on the **mod settings**. 
 
 If you have set the mod to **use the selection tool**, the cursor will show the mod icon and if you click-and-drag to select an area there will be a purple border.
 
-After making a selection, the mod will re-issue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job.  
+After making a selection, the mod will reissue the construction/deconstruction/upgrade commands for the selected entities, so your personal robots will get a chance to take over the job.  
 Those poor base robots will turn around and go back and put their things back into storage.
 
 It will work on:

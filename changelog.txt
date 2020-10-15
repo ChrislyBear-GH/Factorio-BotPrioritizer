@@ -13,7 +13,7 @@ Date: ????
       "Selection Tool": Uses a selection tool to start the reprioritization
       "Direct Select": Uses the personal roboport range as selection area
       "Auto-Mode": Same as Direct Select mode, but doing the operation continuously
-    - Work orders are only re-issued if the player has the material to fullfill the 
+    - Work orders are only reissued if the player has the material to fullfill the 
       order in their inventory.
   Fix:
     - Circuit connections are now retained

@@ -59,7 +59,7 @@ end
 function helpers.print_result(player, count)
     local msg = "" 
     if count > 0 then
-        msg = msg .. "Re-Assigned " .. count .. " work orders"
+        msg = msg .. "Reassigned " .. count .. " work orders"
     else
         msg = msg .. "No fullfillable work orders found"
     end
