@@ -213,6 +213,9 @@ end
 local function settings_changed(event)
     if event.setting:sub(1, 8) ~= "botprio-" then return end
     
+    -- Create basig globasl if missing
+    on_init()
+    
     local player = game.get_player(event.player_index)
     hlp.cache_player_settings(player)
 
