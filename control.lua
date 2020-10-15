@@ -1,4 +1,5 @@
 local hlp = require("helpers")
+local inv_hlp = require("inventory_helper")
 local up_mgr = require("upgrade_manager")
 local circ_mgr = require("circuit_manager")
 local historian = require("history")
@@ -29,7 +30,8 @@ local function reprioritize(event, player, entities, tiles)
         -- surface.find_entities_filtered({area=entity.bounding_box, name='item-request-proxy'})
 
         if entity.valid and not historian.in_history(player, entity) then
-            if entity.type == "entity-ghost" or entity.type == "tile-ghost" then -- handle ghosts
+            if (entity.type == "entity-ghost" or entity.type == "tile-ghost")
+                and inv_hlp.in_inventory(player, entity.ghost_name) then -- handle ghosts
                 -- Try to keep existing circuit connections
                 local new = hlp.tbl_deep_copy(entity.clone({position = entity.position, force = entity.force}))
                 circ_mgr.copy_circuit_connections(entity, new)
@@ -59,25 +61,33 @@ local function reprioritize(event, player, entities, tiles)
                 
             elseif entity ~= nil and entity.to_be_upgraded() then -- handle upgrades
                 -- local upgrade_proto = entity.get_upgrade_target() -- Bug in 1.0 Will be fixed in 1.1 https://forums.factorio.com/viewtopic.php?p=515964
-                local upgrade_proto = global.upgrades[entity.unit_number].t
-                if upgrade_proto then
+                local upgrade_trg = global.upgrades[entity.unit_number].t
+                if upgrade_trg and inv_hlp.in_inventory(player, upgrade_trg) then
                     entity.cancel_upgrade(force)
-                    entity.order_upgrade({force = entity.force, target = upgrade_proto, player = player})
+                    entity.order_upgrade({force = entity.force, target = upgrade_trg, player = player})
                     refreshed_entity = entity
                     cnt = cnt + 1
-                elseif global.debug then
+                elseif global.debug and not upgrade_trg then
                     player.print("ERROR: Couldn't find out upgrade target.")
                 end
 
             elseif entity.name == "item-request-proxy" then
-                refreshed_entity = hlp.tbl_deep_copy(surface.create_entity({
-                                                    name=entity.name,
-                                                    target=entity.proxy_target,
-                                                    position=entity.position,
-                                                    force=force,
-                                                    modules=entity.item_requests
-                                                }))
-                entity.destroy()
+                -- First check if we can fullfill anyting
+                local has_items = 0
+                for name, count in pairs(entity.item_requests) do
+                    if inv_hlp.in_inventory(player, name) then has_items = has_items + 1 end
+                end
+
+                if has_items > 0 then
+                    refreshed_entity = hlp.tbl_deep_copy(surface.create_entity({
+                                                        name=entity.name,
+                                                        target=entity.proxy_target,
+                                                        position=entity.position,
+                                                        force=force,
+                                                        modules=entity.item_requests
+                                                    }))
+                    entity.destroy()
+                end
             end
             if refreshed_entity then historian.add_to_history(event, player, refreshed_entity) end
         end

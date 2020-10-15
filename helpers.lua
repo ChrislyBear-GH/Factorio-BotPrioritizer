@@ -61,7 +61,7 @@ function helpers.print_result(player, count)
     if count > 0 then
         msg = msg .. "Re-Assigned " .. count .. " work orders"
     else
-        msg = msg .. "No work orders found"
+        msg = msg .. "No fullfillable work orders found"
     end
 
     if (global.player_state[player.index].bp_method == "Selection Tool") then
