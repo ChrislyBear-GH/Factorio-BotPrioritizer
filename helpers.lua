@@ -20,7 +20,8 @@ function helpers.cache_player_settings(player)
             bp_disable_msg = false,
             bp_entity_history = {},
             bp_history_time = 5,
-            bp_tick_freq = 20
+            bp_tick_freq = 20,
+            bp_no_inv_checks = false
         } 
     end
 
@@ -31,6 +32,7 @@ function helpers.cache_player_settings(player)
 
     global.player_state[pidx].bp_method = helpers.personal_setting_value(player, "botprio-method")
     global.player_state[pidx].bp_disable_msg = helpers.personal_setting_value(player, "botprio-disable-msg")
+    global.player_state[pidx].bp_no_inv_checks = helpers.personal_setting_value(player, "botprio-no-inv-checks")
     -- Get the player's setting into a global variable for later use!
     if global.player_state[pidx].bp_method == "Auto-Mode" then 
         global.player_state[pidx].bp_history_time = helpers.personal_setting_value(player, "botprio-toggling-time")

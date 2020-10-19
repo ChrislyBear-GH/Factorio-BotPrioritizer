@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2020-10-19
+  Changes:
+    - Added a setting to disable the checking of the inventory before job reassignment
+      Those checks should stay on in Auto-Mode, otherwise it's possible that base bots 
+      will never arrive and stuff won't be built because of missing items.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2020-10-15
   Features:

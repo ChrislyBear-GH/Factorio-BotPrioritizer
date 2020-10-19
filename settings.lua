@@ -29,5 +29,12 @@ data:extend({
       setting_type = "runtime-per-user",
       default_value = false,
       order = 'a[botprio]-d'
+    },
+    {
+      type = "bool-setting",
+      name = "botprio-no-inv-checks",
+      setting_type = "runtime-per-user",
+      default_value = false,
+      order = 'a[botprio]-e'
     }
   })
