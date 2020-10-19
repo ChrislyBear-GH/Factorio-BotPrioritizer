@@ -3,7 +3,7 @@
 [selection]: https://i.ibb.co/DQz1vw0/selection.png "Screenshot of the selection tool"
 [settings]: https://i.ibb.co/bPcxvDH/settings-0-2-0.png "Mod settings"
 
-# Bot Prioritizer 0.2.0
+# Bot Prioritizer 0.2.1
 
 ## A mod to help with building things quicker
 
@@ -25,8 +25,8 @@ You have the options to
 &nbsp;
 
 You can choose between these options in the mod settings on the "Per player" tab:  
-![Mod settings][settings]  
-(If you hover over the option name on the left, there are little descriptions of the options.)
+![Mod settings - version 0.2.0][settings]  
+(Settings of version 0.2.0. If you hover over the option name on the left, there are little descriptions of the options.)
 
 ------------------------
 
@@ -58,9 +58,9 @@ It will work on:
 
 ------------------------
 
-## Known Bugs/Things under construction
+## Caveats/Known issues/Things under construction
 
-- No known bugs at the moment.
+- Robotports on vehicles (train, spidertron, car, ...) currently aren't supported. To prioritize work orders in range of a **Spidertron** use the selection tool and disable the inventory checks in the mod settings.
 
 ------------------
 
