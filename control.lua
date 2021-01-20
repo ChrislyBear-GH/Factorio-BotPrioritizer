@@ -9,6 +9,7 @@ local function on_init()
     if not global.upgrades then global.upgrades = {} end
     if not global.debug then global.debug = false end
     if not global.player_state then global.player_state = {} end
+    if not global.clonespace then global.clonespace = game.surfaces.clonespace or game.create_surface("clonespace") end 
 end
 
 -- Main logic to reassign bot work orders
@@ -21,6 +22,7 @@ local function reprioritize(event, player, entities, tiles)
     historian.purge_history(event, player)
 
     local surface = player.surface
+    local csp = global.clonespace
     local force = player.force
     local cnt = 0
 
@@ -33,12 +35,13 @@ local function reprioritize(event, player, entities, tiles)
             if (entity.type == "entity-ghost" or entity.type == "tile-ghost")
                 and inv_hlp.in_inventory(player, entity.ghost_name) then -- handle ghosts
                 -- Try to keep existing circuit connections
-                local new = hlp.tbl_deep_copy(entity.clone({position = entity.position, force = entity.force}))
-                circ_mgr.copy_circuit_connections(entity, new)
-
+                local new = entity.clone({position = entity.position, force = entity.force, surface=csp})
                 if new then
-                    refreshed_entity = new
+                    circ_mgr.copy_circuit_connections(entity, new) -- does this work at all between surfaces...
                     entity.destroy()
+                    refreshed_entity = new.clone({position = new.position, force = new.force, surface=surface})
+                    circ_mgr.copy_circuit_connections(new, refreshed_entity)
+                    new.destroy()
                     cnt = cnt + 1
                 end
 
@@ -79,14 +82,15 @@ local function reprioritize(event, player, entities, tiles)
                 end
 
                 if has_items > 0 then
-                    refreshed_entity = hlp.tbl_deep_copy(surface.create_entity({
-                                                        name=entity.name,
-                                                        target=entity.proxy_target,
-                                                        position=entity.position,
-                                                        force=force,
-                                                        modules=entity.item_requests
-                                                    }))
+                    local creation_settings = {
+                        name=entity.name,
+                        target=entity.proxy_target,
+                        position=entity.position,
+                        force=force,
+                        modules=entity.item_requests
+                    }
                     entity.destroy()
+                    refreshed_entity = hlp.tbl_deep_copy(surface.create_entity(creation_settings))
                 end
             end
             if refreshed_entity then historian.add_to_history(event, player, refreshed_entity) end
@@ -125,7 +129,7 @@ local function produce_tool(player)
         end
 
         -- Put a selection tool in the player's hand
-        if player.clean_cursor() then
+        if player.clear_cursor() then
             player.cursor_stack.set_stack({name = 'bot-prioritizer', type = 'selection-tool', count = 1})
         end
 end
@@ -213,7 +217,7 @@ end
 local function settings_changed(event)
     if event.setting:sub(1, 8) ~= "botprio-" then return end
     
-    -- Create basig globasl if missing
+    -- Create basic globals if missing
     on_init()
     
     local player = game.get_player(event.player_index)
