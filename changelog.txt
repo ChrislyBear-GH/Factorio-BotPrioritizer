@@ -1,7 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
-Date: ????
+Date: 2021-01-20
   Changes:
+    - Cloning ghosts internally requires a "temporary" surface in 1.1, because ghosts now have
+      collision with each other (or something like that). This mod now creates (but doesn't
+      generate chunks on) a new empty surface called "clonespace" to be able to make a backup of
+      the ghost before destroying and cloning it back to the player's surface.
+      TL;DR: It works again in 1.1.
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2020-10-19
