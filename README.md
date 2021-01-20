@@ -62,7 +62,11 @@ It will work on:
 
 - Robotports on vehicles (train, spidertron, car, ...) currently aren't supported. To prioritize work orders in range of a **Spidertron** use the selection tool and disable the inventory checks in the mod settings.
 
-------------------
+------------------------
+
+## Authors notes
+
+I want to apologize to all the people waiting for the release for 1.1. I got caught up in some family business and then fell into a deep Cracktorio hole during the whole holiday season. The factory just demanded to grow, so there was no time for coding. But hey! Here it finally is: The update for 1.1.
 
 ## Credits
 
