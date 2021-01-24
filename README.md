@@ -3,7 +3,7 @@
 [selection]: https://i.ibb.co/DQz1vw0/selection.png "Screenshot of the selection tool"
 [settings]: https://i.ibb.co/bPcxvDH/settings-0-2-0.png "Mod settings"
 
-# Bot Prioritizer 0.2.2
+# Bot Prioritizer 0.2.3
 
 ## A mod to help with building things quicker
 
