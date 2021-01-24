@@ -1,7 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: ????
-  Changes:
+  Fix:
+    - Fixed a crash in Auto-Mode. Deconstruction proxies don't have a unit_number but are
+      LuaEntities nonetheless. Dropped the distinction between tiles and entites and now just look
+      if a unit_number is available or not.      
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2021-01-20

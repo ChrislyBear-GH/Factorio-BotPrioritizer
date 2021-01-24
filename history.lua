@@ -3,9 +3,9 @@ local hst = {}
 function hst.in_history(player, entity)
     if not (global.player_state[player.index].bp_method == "Auto-Mode") then return end
 
-    if entity.object_name == "LuaEntity" then
+    if entity.unit_number then
         return (global.player_state[player.index].bp_entity_history[entity.unit_number] ~= nil)
-    elseif entity.object_name == "LuaTile" then
+    elseif entity.position then
         return (global.player_state[player.index].bp_entity_history[entity.position] ~= nil)
     else
         return false
@@ -24,9 +24,9 @@ end
 function hst.add_to_history(event, player, entity)
     if not (global.player_state[player.index].bp_method == "Auto-Mode") then return end
 
-    if entity.object_name == "LuaEntity" then
+    if entity.unit_number then
         global.player_state[player.index].bp_entity_history[entity.unit_number] = event.tick
-    elseif entity.object_name == "LuaTile" then
+    elseif entity.position then
         global.player_state[player.index].bp_entity_history[entity.position] = event.tick
     end
 end
