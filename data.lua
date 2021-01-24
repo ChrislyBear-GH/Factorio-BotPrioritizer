@@ -54,7 +54,7 @@ data:extend(
 	{
 		type = "custom-input",
 		name = "botprio-hotkey",
-		key_sequence = "CONTROL + D",
+		key_sequence = "CONTROL + G",
 		consuming = "none"
 	}
 })

@@ -37,7 +37,7 @@ After installing the mod, there are two ways to use it:
 - You can click the shortcut button located next to the quickbar here:  
 ![Button location in the quickbar][quickbar]
 
-- Or you can use the keyboard hotkey, which defaults to **CONTROL + D**:  
+- Or you can use the keyboard hotkey, which defaults to **CONTROL + G**:  
 ![Keyboard configuration page][controls]
 
 Each of the two options will either **activate the selection tool** or **do the reprioritization right away**, depending on the **mod settings**. 

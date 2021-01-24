@@ -1,6 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.3
-Date: ????
+Date: 2021-01-24
+  Changes:
+    - Changed the default hotkey to CTRL+G, since holding CTRL and running right collides with the
+      previous default hotkey.
   Fix:
     - Fixed a crash in Auto-Mode. Deconstruction proxies don't have a unit_number but are
       LuaEntities nonetheless. Dropped the distinction between tiles and entites and now just look
